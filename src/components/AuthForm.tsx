@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserRole } from '@/context/AuthContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export interface LoginFormValues {
   email: string;
@@ -20,8 +20,8 @@ export interface SignupFormValues {
   email: string;
   password: string;
   confirmPassword: string;
-  organizationId: string;
-  organizationName: string;
+  organizationId?: string;
+  organizationName?: string;
   role: UserRole;
 }
 
@@ -29,7 +29,6 @@ type AuthFormProps = {
   type: "login" | "signup";
   onSubmit: (data: LoginFormValues | SignupFormValues) => void;
   loading: boolean;
-  checkOrganizationId?: (orgId: string) => Promise<boolean>;
 };
 
 const loginSchema = z.object({
@@ -42,24 +41,30 @@ const signupSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   confirmPassword: z.string(),
-  organizationId: z.string().min(3, { message: "Organization ID must be at least 3 characters" })
-    .regex(/^[a-z0-9-]+$/, { message: "Organization ID can only contain lowercase letters, numbers, and hyphens" }),
-  organizationName: z.string().min(2, { message: "Organization name must be at least 2 characters" }),
+  organizationId: z.string().optional(),
+  organizationName: z.string().optional(),
   role: z.enum(["Admin", "Manager", "Developer", "Viewer"], {
     required_error: "Please select a role",
   }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
+}).refine((data) => {
+  // If organizationId is provided, organizationName should not be
+  // If organizationId is not provided, organizationName is required
+  return data.organizationId ? !data.organizationName : !!data.organizationName;
+}, {
+  message: "Either organization ID or name must be provided",
+  path: ["organizationName"],
 });
 
 const AuthForm: React.FC<AuthFormProps> = ({
   type,
   onSubmit,
   loading,
-  checkOrganizationId,
 }) => {
   const isLogin = type === "login";
+  const [signupType, setSignupType] = useState<'new' | 'existing'>('new');
   const schema = isLogin ? loginSchema : signupSchema;
 
   const form = useForm<LoginFormValues | SignupFormValues>({
@@ -76,7 +81,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
           confirmPassword: "",
           organizationId: "",
           organizationName: "",
-          role: "Admin" as UserRole,
+          role: "Developer" as UserRole,
         },
   });
 
@@ -88,21 +93,21 @@ const AuthForm: React.FC<AuthFormProps> = ({
     
     try {
       setCheckingOrgId(true);
-      if (checkOrganizationId) {
-        const exists = await checkOrganizationId(orgId);
+      // if (checkOrganizationId) {
+      //   const exists = await checkOrganizationId(orgId);
         
-        if (exists) {
-          setOrgIdAvailabilityMsg({
-            text: "This Organization ID is already taken",
-            error: true
-          });
-        } else {
-          setOrgIdAvailabilityMsg({
-            text: "Organization ID is available",
-            error: false
-          });
-        }
-      }
+      //   if (exists) {
+      //     setOrgIdAvailabilityMsg({
+      //       text: "This Organization ID is already taken",
+      //       error: true
+      //     });
+      //   } else {
+      //     setOrgIdAvailabilityMsg({
+      //       text: "Organization ID is available",
+      //       error: false
+      //     });
+      //   }
+      // }
     } catch (error) {
       console.error("Error checking organization ID:", error);
     } finally {
@@ -117,26 +122,35 @@ const AuthForm: React.FC<AuthFormProps> = ({
         <CardDescription>
           {isLogin
             ? "Enter your credentials to access your account"
-            : "Fill in the form below to create your account and organization"}
+            : "Fill in the form below to create your account"}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {!isLogin && (
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <>
+                <Tabs value={signupType} onValueChange={(v) => setSignupType(v as 'new' | 'existing')}>
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="new">New Organization</TabsTrigger>
+                    <TabsTrigger value="existing">Join Organization</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
             )}
 
             <FormField
@@ -183,52 +197,35 @@ const AuthForm: React.FC<AuthFormProps> = ({
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="organizationId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Organization ID</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="my-company" 
-                          {...field} 
-                          onBlur={(e) => {
-                            field.onBlur();
-                            checkOrgIdAvailability(e.target.value);
-                          }}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            setOrgIdAvailabilityMsg(null);
-                          }}
-                        />
-                      </FormControl>
-                      {orgIdAvailabilityMsg && (
-                        <p className={`text-sm ${orgIdAvailabilityMsg.error ? 'text-destructive' : 'text-green-600'}`}>
-                          {orgIdAvailabilityMsg.text}
-                        </p>
-                      )}
-                      {checkingOrgId && (
-                        <p className="text-sm text-muted-foreground">Checking availability...</p>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="organizationName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Organization Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Acme Inc." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {signupType === 'new' ? (
+                  <FormField
+                    control={form.control}
+                    name="organizationName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Organization Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Acme Inc." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ) : (
+                  <FormField
+                    control={form.control}
+                    name="organizationId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Organization ID</FormLabel>
+                        <FormControl>
+                          <Input placeholder="org-xxxxx-xxxx" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <FormField
                   control={form.control}
@@ -243,10 +240,14 @@ const AuthForm: React.FC<AuthFormProps> = ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Admin">Admin</SelectItem>
-                          <SelectItem value="Manager">Manager</SelectItem>
-                          <SelectItem value="Developer">Developer</SelectItem>
-                          <SelectItem value="Viewer">Viewer</SelectItem>
+                          {signupType === 'new' ? (
+                            <SelectItem value="Admin">Admin</SelectItem>
+                          ) : (
+                            <>
+                              <SelectItem value="Developer">Developer</SelectItem>
+                              <SelectItem value="Viewer">Viewer</SelectItem>
+                            </>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />

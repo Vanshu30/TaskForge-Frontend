@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -28,12 +27,13 @@ interface AuthContextType {
     name: string;
     email: string;
     password: string;
-    organizationId: string;
-    organizationName: string;
+    organizationId?: string;
+    organizationName?: string;
     role: UserRole;
   }) => Promise<void>;
   logout: () => void;
-  checkOrganizationId: (orgId: string) => Promise<boolean>;
+  generateOrganizationId: () => string;
+  listOrganizations: () => Organization[];
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,6 +56,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setLoading(false);
   }, []);
+
+  const generateOrganizationId = () => {
+    const prefix = 'org';
+    const timestamp = Date.now().toString(36);
+    const randomStr = Math.random().toString(36).substring(2, 6);
+    const orgId = `${prefix}-${timestamp}-${randomStr}`;
+    return orgId;
+  };
+
+  const listOrganizations = () => {
+    const storedOrgs = localStorage.getItem('organizations');
+    const orgs = storedOrgs ? JSON.parse(storedOrgs) : {};
+    return Object.entries(orgs).map(([id, org]: [string, any]) => ({
+      id,
+      name: org.name
+    }));
+  };
 
   const login = async (email: string, password: string) => {
     try {
@@ -104,22 +121,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     name: string;
     email: string;
     password: string;
-    organizationId: string;
-    organizationName: string;
+    organizationId?: string;
+    organizationName?: string;
     role: UserRole;
   }) => {
     try {
       setLoading(true);
       setError(null);
       
-      // Check if organization exists
-      const isOrgIdTaken = await checkOrganizationId(userData.organizationId);
-      if (isOrgIdTaken) {
-        throw new Error('Organization ID already in use');
-      }
-      
-      // This is just a mock implementation
-      // In a real app, this would be an API call to your authentication service
       const storedUsers = localStorage.getItem('users');
       const users = storedUsers ? JSON.parse(storedUsers) : [];
       
@@ -127,26 +136,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (users.some((u: any) => u.email === userData.email)) {
         throw new Error('Email already registered');
       }
+
+      let orgId = userData.organizationId;
+      let orgName = userData.organizationName;
+
+      // If no organization ID is provided, this is a new organization
+      if (!orgId) {
+        if (!orgName) {
+          throw new Error('Organization name is required for new organizations');
+        }
+        orgId = generateOrganizationId();
+      } else {
+        // Verify that the organization exists
+        const organizations = listOrganizations();
+        const existingOrg = organizations.find(org => org.id === orgId);
+        if (!existingOrg) {
+          throw new Error('Organization ID not found');
+        }
+        orgName = existingOrg.name;
+      }
       
-      // Create user with ID
+      // Create user with ID and organization info
       const newUser = {
         ...userData,
         id: Date.now().toString(),
+        organizationId: orgId,
+        organizationName: orgName,
       };
       
-      // Register organization
-      organizations[userData.organizationId] = {
-        name: userData.organizationName
-      };
+      // If this is a new organization, register it
+      if (!userData.organizationId) {
+        organizations[orgId] = {
+          name: orgName
+        };
+        localStorage.setItem('organizations', JSON.stringify(organizations));
+      }
       
-      // Save organizations to localStorage for persistence
-      localStorage.setItem('organizations', JSON.stringify(organizations));
-      
-      // Save user to "database"
+      // Save user
       users.push(newUser);
       localStorage.setItem('users', JSON.stringify(users));
       
-      // Remove password before storing user in state
+      // Remove password before storing in state
       const { password: _, ...userWithoutPassword } = newUser;
       
       localStorage.setItem('user', JSON.stringify(userWithoutPassword));
@@ -199,7 +229,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         signup,
         logout,
-        checkOrganizationId,
+        generateOrganizationId,
+        listOrganizations,
       }}
     >
       {children}
