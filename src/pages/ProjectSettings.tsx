@@ -15,6 +15,13 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/hooks/use-toast';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 
 // Mock data until Supabase integration
 const MOCK_PROJECTS = {
@@ -72,6 +79,7 @@ const ProjectSettings = () => {
   const [newTaskType, setNewTaskType] = useState('');
   const [newPriority, setNewPriority] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
+  const [selectedRole, setSelectedRole] = useState('member');
   const [taskTypes, setTaskTypes] = useState(project?.taskTypes || []);
   const [priorities, setPriorities] = useState(project?.priorities || []);
 
@@ -133,7 +141,7 @@ const ProjectSettings = () => {
     // This would actually send an invitation email through Supabase
     toast({
       title: "Invitation sent",
-      description: `Invitation email sent to ${inviteEmail}`,
+      description: `Invitation email sent to ${inviteEmail} with role: ${selectedRole}`,
     });
     
     setInviteEmail('');
@@ -235,7 +243,21 @@ const ProjectSettings = () => {
                         type="email"
                         value={inviteEmail}
                         onChange={(e) => setInviteEmail(e.target.value)}
+                        className="flex-1"
                       />
+                      <Select 
+                        value={selectedRole} 
+                        onValueChange={setSelectedRole}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="member">Member</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="viewer">Viewer</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <Button onClick={handleInviteMember}>Invite</Button>
                     </div>
                     
