@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import AddTaskDialog from './AddTaskDialog';
