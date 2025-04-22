@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Briefcase,
+  ListOrdered,
 } from 'lucide-react';
 
 interface MenuItemProps {
@@ -164,8 +165,14 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             <MenuItem 
               icon={<Briefcase size={20} />} 
               label={collapsed ? '' : 'Projects'} 
-              active={location.pathname === '/projects'}
+              active={location.pathname === '/projects' || location.pathname.startsWith('/projects/')}
               onClick={() => handleNavigation('/projects')}
+            />
+            <MenuItem 
+              icon={<ListOrdered size={20} />} 
+              label={collapsed ? '' : 'Issues'} 
+              active={location.pathname === '/issues'}
+              onClick={() => handleNavigation('/issues')}
             />
             <MenuItem 
               icon={<Calendar size={20} />} 
@@ -187,6 +194,8 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           <MenuItem 
             icon={<Settings size={20} />} 
             label={collapsed ? '' : 'Settings'} 
+            active={location.pathname === '/settings'}
+            onClick={() => handleNavigation('/settings')}
           />
           <div 
             className="flex items-center mt-4 space-x-3 cursor-pointer"
