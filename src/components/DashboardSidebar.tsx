@@ -163,6 +163,8 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             <MenuItem 
               icon={<CheckCircle size={20} />} 
               label={collapsed ? '' : 'Projects'} 
+              active={location.pathname === '/projects'}
+              onClick={() => handleNavigation('/projects')}
             />
             <MenuItem 
               icon={<Calendar size={20} />} 
