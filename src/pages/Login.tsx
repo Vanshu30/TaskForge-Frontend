@@ -1,19 +1,26 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import AuthForm, { LoginFormValues } from '@/components/AuthForm';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 
 const Login: React.FC = () => {
   const { user, login, loading, error } = useAuth();
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   // If user is already logged in, redirect to dashboard
   if (user) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const handleSubmit = (data: LoginFormValues) => {
-    login(data.email, data.password);
+  const handleSubmit = async (data: LoginFormValues) => {
+    try {
+      setLoginError(null);
+      await login(data.email, data.password);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      setLoginError(message);
+    }
   };
 
   return (
@@ -40,9 +47,9 @@ const Login: React.FC = () => {
           </Link>
         </div>
 
-        {error && (
+        {(error || loginError) && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-800 rounded-md">
-            {error}
+            {error || loginError}
           </div>
         )}
 

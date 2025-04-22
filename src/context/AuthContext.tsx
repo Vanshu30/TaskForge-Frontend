@@ -112,6 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: 'Login failed',
         description: message,
       });
+      throw err; // Re-throw the error to be caught by the Login component
     } finally {
       setLoading(false);
     }
