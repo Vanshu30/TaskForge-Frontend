@@ -159,13 +159,17 @@ const ProjectsList = () => {
     setProjects([...projects, newProject]);
   };
 
-  // Fixed: Navigate to project detail page without modifying the projects array
   const handleProjectClick = (projectId) => {
+    // Navigate to project detail page
     navigate(`/projects/${projectId}`);
   };
 
-  const handleSettingsClick = (e, projectId) => {
-    e.stopPropagation(); // Prevent project card click
+  const handleSettingsClick = (event, projectId) => {
+    // Prevent the click event from bubbling up to the card
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Navigate to project settings
     navigate(`/projects/${projectId}/settings`);
   };
 
@@ -178,54 +182,61 @@ const ProjectsList = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
-          <Card 
+          <Link 
             key={project.id} 
-            className="hover:shadow-md transition-shadow cursor-pointer" 
-            onClick={() => handleProjectClick(project.id)}
+            to={`/projects/${project.id}`}
+            className="block"
+            onClick={(e) => {
+              // Use the navigation here instead of the Link's default behavior
+              e.preventDefault();
+              handleProjectClick(project.id);
+            }}
           >
-            <CardHeader className="pb-2">
-              <CardTitle className="flex justify-between items-start">
-                <span className="hover:text-primary transition-colors">
-                  {project.name}
-                </span>
-                <Badge variant="outline" className="ml-2">
-                  {Math.round((project.tasks.completed / (project.tasks.total || 1)) * 100)}%
-                </Badge>
-              </CardTitle>
-              <CardDescription>{project.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  <span>Due {new Date(project.dueDate).toLocaleDateString()}</span>
+            <Card className="hover:shadow-md transition-shadow h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex justify-between items-start">
+                  <span className="hover:text-primary transition-colors">
+                    {project.name}
+                  </span>
+                  <Badge variant="outline" className="ml-2">
+                    {Math.round((project.tasks.completed / (project.tasks.total || 1)) * 100)}%
+                  </Badge>
+                </CardTitle>
+                <CardDescription>{project.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    <span>Due {new Date(project.dueDate).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Users className="mr-2 h-4 w-4" />
+                    <span>{project.members} team members</span>
+                  </div>
                 </div>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Users className="mr-2 h-4 w-4" />
-                  <span>{project.members} team members</span>
+              </CardContent>
+              <CardFooter className="flex justify-between pt-2 border-t">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{project.tasks.completed}/{project.tasks.total} tasks</span>
+                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary" 
+                      style={{ width: `${(project.tasks.completed / (project.tasks.total || 1)) * 100}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-between pt-2 border-t">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{project.tasks.completed}/{project.tasks.total} tasks</span>
-                <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-primary" 
-                    style={{ width: `${(project.tasks.completed / (project.tasks.total || 1)) * 100}%` }}
-                  />
-                </div>
-              </div>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={(e) => handleSettingsClick(e, project.id)}
-              >
-                <Settings className="h-4 w-4" />
-                <span className="sr-only">Settings</span>
-              </Button>
-            </CardFooter>
-          </Card>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={(e) => handleSettingsClick(e, project.id)}
+                >
+                  <Settings className="h-4 w-4" />
+                  <span className="sr-only">Settings</span>
+                </Button>
+              </CardFooter>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
