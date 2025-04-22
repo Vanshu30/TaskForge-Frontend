@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { UserRole } from '@/context/AuthContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PasswordInput from "@/components/PasswordInput";
 
 export interface LoginFormValues {
   email: string;
@@ -50,8 +51,6 @@ const signupSchema = z.object({
   message: "Passwords do not match",
   path: ["confirmPassword"],
 }).refine((data) => {
-  // If organizationId is provided, organizationName should not be
-  // If organizationId is not provided, organizationName is required
   return data.organizationId ? !data.organizationName : !!data.organizationName;
 }, {
   message: "Either organization ID or name must be provided",
@@ -88,7 +87,6 @@ const AuthForm: React.FC<AuthFormProps> = ({
   const [orgIdAvailabilityMsg, setOrgIdAvailabilityMsg] = React.useState<{text: string, error: boolean} | null>(null);
   const [checkingOrgId, setCheckingOrgId] = React.useState(false);
 
-  // Just dummy implementation since actual functionality was removed
   const checkOrgIdAvailability = async (orgId: string) => {
     if (!orgId || orgId.length < 3) return;
     setCheckingOrgId(false);
@@ -151,7 +149,11 @@ const AuthForm: React.FC<AuthFormProps> = ({
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
+                        <PasswordInput
+                          placeholder="••••••••"
+                          {...field}
+                          autoComplete="new-password"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -165,7 +167,11 @@ const AuthForm: React.FC<AuthFormProps> = ({
                     <FormItem>
                       <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
+                        <PasswordInput
+                          placeholder="••••••••"
+                          {...field}
+                          autoComplete="new-password"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -259,7 +265,11 @@ const AuthForm: React.FC<AuthFormProps> = ({
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
+                        <PasswordInput
+                          placeholder="••••••••"
+                          {...field}
+                          autoComplete="current-password"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
