@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,17 +11,14 @@ import {
   User,
   MessageSquare,
   PlusCircle,
-  ChevronRight
+  ChevronRight,
+  Users
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import AddTaskDialog from './AddTaskDialog';
 
 // Mock data until Supabase integration
 const initialColumns = {
-  'backlog': {
-    id: 'backlog',
-    title: 'Backlog',
-    taskIds: ['task-1', 'task-2', 'task-3'],
-  },
   'todo': {
     id: 'todo',
     title: 'To Do',
@@ -201,7 +197,7 @@ const KanbanBoard = ({ projectId }) => {
     const destinationColumn = columns[destination.droppableId];
     
     // Get column order to determine if this is a backwards move
-    const columnOrder = ['backlog', 'todo', 'in-progress', 'review', 'done'];
+    const columnOrder = ['todo', 'in-progress', 'review', 'done'];
     const sourceIndex = columnOrder.indexOf(sourceColumn.id);
     const destIndex = columnOrder.indexOf(destinationColumn.id);
     
@@ -240,17 +236,32 @@ const KanbanBoard = ({ projectId }) => {
     <div className="h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Kanban Board</h2>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Task
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => window.location.href = `/projects/${projectId}/settings#team`}>
+            <Users className="mr-2 h-4 w-4" />
+            Team
+          </Button>
+          <AddTaskDialog projectId={projectId} onAddTask={(task) => {
+            // Add task to todo column by default
+            const newTasks = { ...tasks, [task.id]: task };
+            const newColumns = {
+              ...columns,
+              todo: {
+                ...columns.todo,
+                taskIds: [...columns.todo.taskIds, task.id],
+              },
+            };
+            setTasks(newTasks);
+            setColumns(newColumns);
+          }} />
+        </div>
       </div>
 
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 overflow-x-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 overflow-x-auto">
           {Object.values(columns).map((column) => (
             <div key={column.id} className="min-w-[280px]">
-              <div className="bg-muted rounded-t-md p-3">
+              <div className="bg-muted rounded-t-md p-3 border-x border-t border-border">
                 <h3 className="font-medium flex items-center">
                   {column.title}
                   <Badge variant="outline" className="ml-2">
@@ -264,7 +275,7 @@ const KanbanBoard = ({ projectId }) => {
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className="bg-muted/50 rounded-b-md p-2 min-h-[500px]"
+                    className="bg-muted/50 rounded-b-md p-2 min-h-[500px] border border-border"
                   >
                     {column.taskIds.map((taskId, index) => {
                       const task = tasks[taskId];

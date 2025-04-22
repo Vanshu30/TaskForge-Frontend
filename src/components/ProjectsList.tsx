@@ -1,10 +1,15 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, Calendar, Users, Settings } from 'lucide-react';
+import { Briefcase, Calendar, Users, Settings, PlusCircle } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { toast } from '@/hooks/use-toast';
 
 // Mock data until Supabase integration
 const MOCK_PROJECTS = [
@@ -34,19 +39,98 @@ const MOCK_PROJECTS = [
   },
 ];
 
+const AddProjectDialog = ({ onAdd }) => {
+  const [open, setOpen] = React.useState(false);
+  const form = useForm({
+    defaultValues: {
+      name: '',
+      description: '',
+    },
+  });
+
+  const onSubmit = async (data) => {
+    try {
+      // TODO: Add Supabase integration here
+      const newProject = {
+        id: Date.now().toString(),
+        name: data.name,
+        description: data.description,
+        tasks: { total: 0, completed: 0 },
+        members: 1,
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      };
+      
+      onAdd(newProject);
+      setOpen(false);
+      form.reset();
+      toast({
+        title: "Project created",
+        description: "New project has been created successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create project",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          New Project
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create New Project</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Project Name</Label>
+            <Input
+              id="name"
+              {...form.register('name', { required: true })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              {...form.register('description')}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit">Create Project</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const ProjectsList = () => {
+  const [projects, setProjects] = React.useState(MOCK_PROJECTS);
+
+  const handleAddProject = (newProject) => {
+    setProjects([...projects, newProject]);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Projects</h2>
-        <Button>
-          <Briefcase className="mr-2 h-4 w-4" />
-          New Project
-        </Button>
+        <AddProjectDialog onAdd={handleAddProject} />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {MOCK_PROJECTS.map((project) => (
+        {projects.map((project) => (
           <Card key={project.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-2">
               <CardTitle className="flex justify-between items-start">
