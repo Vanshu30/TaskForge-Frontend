@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -159,8 +158,11 @@ const ProjectsList = () => {
     setProjects([...projects, newProject]);
   };
 
-  const handleProjectClick = (projectId) => {
+  const handleProjectClick = (projectId, event) => {
     // Navigate to project detail page
+    if (event) {
+      event.preventDefault();
+    }
     navigate(`/projects/${projectId}`);
   };
 
@@ -182,17 +184,11 @@ const ProjectsList = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
-          <Link 
-            key={project.id} 
-            to={`/projects/${project.id}`}
-            className="block"
-            onClick={(e) => {
-              // Use the navigation here instead of the Link's default behavior
-              e.preventDefault();
-              handleProjectClick(project.id);
-            }}
-          >
-            <Card className="hover:shadow-md transition-shadow h-full">
+          <div key={project.id} className="block">
+            <Card 
+              className="hover:shadow-md transition-shadow h-full cursor-pointer"
+              onClick={(e) => handleProjectClick(project.id, e)}
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="flex justify-between items-start">
                   <span className="hover:text-primary transition-colors">
@@ -236,7 +232,7 @@ const ProjectsList = () => {
                 </Button>
               </CardFooter>
             </Card>
-          </Link>
+          </div>
         ))}
       </div>
     </div>
