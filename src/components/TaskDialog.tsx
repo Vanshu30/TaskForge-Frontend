@@ -34,9 +34,10 @@ interface TaskDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onAddComment: (taskId: string, comment: string) => void;
+  teamMembers?: {id: string; name: string; email: string}[];
 }
 
-const TaskDialog: React.FC<TaskDialogProps> = ({ task, isOpen, onClose, onAddComment }) => {
+const TaskDialog: React.FC<TaskDialogProps> = ({ task, isOpen, onClose, onAddComment, teamMembers = [] }) => {
   const [newComment, setNewComment] = useState('');
 
   if (!task) return null;

@@ -285,7 +285,6 @@ const KanbanBoard = ({ projectId }) => {
       return;
     }
 
-    // Prevent moving tasks backwards logic
     const sourceColumn = columns[source.droppableId];
     const destinationColumn = columns[destination.droppableId];
     
