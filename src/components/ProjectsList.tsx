@@ -152,15 +152,15 @@ const AddProjectDialog = ({ onAdd }) => {
 };
 
 const ProjectsList = () => {
-  const [projects, setProjects] = React.useState(MOCK_PROJECTS);
+  const [projects, setProjects] = useState(MOCK_PROJECTS);
   const navigate = useNavigate();
 
   const handleAddProject = (newProject) => {
     setProjects([...projects, newProject]);
   };
 
+  // Fixed: Navigate to project detail page without modifying the projects array
   const handleProjectClick = (projectId) => {
-    // Navigate to project detail page without modifying the projects array
     navigate(`/projects/${projectId}`);
   };
 
