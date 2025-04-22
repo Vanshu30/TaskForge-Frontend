@@ -88,17 +88,10 @@ const AuthForm: React.FC<AuthFormProps> = ({
   const [orgIdAvailabilityMsg, setOrgIdAvailabilityMsg] = React.useState<{text: string, error: boolean} | null>(null);
   const [checkingOrgId, setCheckingOrgId] = React.useState(false);
 
+  // Just dummy implementation since actual functionality was removed
   const checkOrgIdAvailability = async (orgId: string) => {
     if (!orgId || orgId.length < 3) return;
-    
-    try {
-      setCheckingOrgId(true);
-      // Code for checking organization ID was previously here
-    } catch (error) {
-      console.error("Error checking organization ID:", error);
-    } finally {
-      setCheckingOrgId(false);
-    }
+    setCheckingOrgId(false);
   };
 
   return (
@@ -236,6 +229,38 @@ const AuthForm: React.FC<AuthFormProps> = ({
                           )}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
+            {isLogin && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="you@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="••••••••" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
