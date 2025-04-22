@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -153,9 +153,14 @@ const AddProjectDialog = ({ onAdd }) => {
 
 const ProjectsList = () => {
   const [projects, setProjects] = React.useState(MOCK_PROJECTS);
+  const navigate = useNavigate();
 
   const handleAddProject = (newProject) => {
     setProjects([...projects, newProject]);
+  };
+
+  const handleProjectClick = (projectId) => {
+    navigate(`/projects/${projectId}`);
   };
 
   return (
@@ -167,12 +172,16 @@ const ProjectsList = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
-          <Card key={project.id} className="hover:shadow-md transition-shadow">
+          <Card 
+            key={project.id} 
+            className="hover:shadow-md transition-shadow cursor-pointer" 
+            onClick={() => handleProjectClick(project.id)}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="flex justify-between items-start">
-                <Link to={`/projects/${project.id}`} className="hover:text-primary transition-colors">
+                <span className="hover:text-primary transition-colors">
                   {project.name}
-                </Link>
+                </span>
                 <Badge variant="outline" className="ml-2">
                   {Math.round((project.tasks.completed / (project.tasks.total || 1)) * 100)}%
                 </Badge>
@@ -201,12 +210,17 @@ const ProjectsList = () => {
                   />
                 </div>
               </div>
-              <Link to={`/projects/${project.id}/settings`}>
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-4 w-4" />
-                  <span className="sr-only">Settings</span>
-                </Button>
-              </Link>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent project card click
+                  navigate(`/projects/${project.id}/settings`);
+                }}
+              >
+                <Settings className="h-4 w-4" />
+                <span className="sr-only">Settings</span>
+              </Button>
             </CardFooter>
           </Card>
         ))}
