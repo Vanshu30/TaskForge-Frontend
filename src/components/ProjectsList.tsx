@@ -160,7 +160,13 @@ const ProjectsList = () => {
   };
 
   const handleProjectClick = (projectId) => {
+    // Navigate to project detail page without modifying the projects array
     navigate(`/projects/${projectId}`);
+  };
+
+  const handleSettingsClick = (e, projectId) => {
+    e.stopPropagation(); // Prevent project card click
+    navigate(`/projects/${projectId}/settings`);
   };
 
   return (
@@ -213,10 +219,7 @@ const ProjectsList = () => {
               <Button 
                 variant="ghost" 
                 size="icon"
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent project card click
-                  navigate(`/projects/${project.id}/settings`);
-                }}
+                onClick={(e) => handleSettingsClick(e, project.id)}
               >
                 <Settings className="h-4 w-4" />
                 <span className="sr-only">Settings</span>
