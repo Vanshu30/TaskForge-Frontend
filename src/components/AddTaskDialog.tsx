@@ -42,7 +42,10 @@ const AddTaskDialog = ({ projectId, onAddTask, teamMembers = [] }: AddTaskDialog
   const onSubmit = async (data) => {
     try {
       // Create new task with due date and assignee
-      const selectedAssignee = teamMembers.find(member => member.id === data.assignee);
+      const selectedAssignee = data.assignee === "unassigned" 
+        ? null 
+        : teamMembers.find(member => member.id === data.assignee);
+      
       const assigneeData = selectedAssignee 
         ? {
             id: selectedAssignee.id,
@@ -150,12 +153,12 @@ const AddTaskDialog = ({ projectId, onAddTask, teamMembers = [] }: AddTaskDialog
           </div>
           <div className="space-y-2">
             <Label htmlFor="assignee">Assign To</Label>
-            <Select onValueChange={(value) => form.setValue('assignee', value)} defaultValue="">
+            <Select onValueChange={(value) => form.setValue('assignee', value)} defaultValue="unassigned">
               <SelectTrigger>
                 <SelectValue placeholder="Select team member" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Unassigned</SelectItem>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
                 {teamMembers.map(member => (
                   <SelectItem key={member.id} value={member.id}>
                     {member.name}
