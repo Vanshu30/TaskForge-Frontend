@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -29,7 +30,12 @@ const Issues = () => {
       
       <div className="flex-1 overflow-auto">
         <div className="flex items-center p-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="go back">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate(-1)} 
+            aria-label="go back"
+          >
             <ArrowLeft />
           </Button>
           <h1 className="text-2xl font-bold ml-2">Issues</h1>
