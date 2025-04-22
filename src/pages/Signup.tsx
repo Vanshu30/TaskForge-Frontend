@@ -5,7 +5,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 
 const Signup: React.FC = () => {
-  const { user, signup, loading, error, checkOrganizationId } = useAuth();
+  const { user, signup, loading, error } = useAuth();
 
   // If user is already logged in, redirect to dashboard
   if (user) {
@@ -49,8 +49,7 @@ const Signup: React.FC = () => {
         <AuthForm 
           type="signup" 
           onSubmit={handleSubmit} 
-          loading={loading} 
-          checkOrganizationId={checkOrganizationId}
+          loading={loading}
         />
       </div>
     </div>

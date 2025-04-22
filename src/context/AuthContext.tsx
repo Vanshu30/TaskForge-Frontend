@@ -211,15 +211,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const checkOrganizationId = async (orgId: string): Promise<boolean> => {
-    // Load organizations from localStorage
-    const storedOrgs = localStorage.getItem('organizations');
-    const orgs = storedOrgs ? JSON.parse(storedOrgs) : {};
-    
-    // Check if organization ID already exists
-    return !!orgs[orgId];
-  };
-
   return (
     <AuthContext.Provider
       value={{

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -88,26 +89,13 @@ const AuthForm: React.FC<AuthFormProps> = ({
   const [orgIdAvailabilityMsg, setOrgIdAvailabilityMsg] = React.useState<{text: string, error: boolean} | null>(null);
   const [checkingOrgId, setCheckingOrgId] = React.useState(false);
 
+  // This function is not being used currently, can be removed or updated later
   const checkOrgIdAvailability = async (orgId: string) => {
     if (!orgId || orgId.length < 3) return;
     
     try {
       setCheckingOrgId(true);
-      // if (checkOrganizationId) {
-      //   const exists = await checkOrganizationId(orgId);
-        
-      //   if (exists) {
-      //     setOrgIdAvailabilityMsg({
-      //       text: "This Organization ID is already taken",
-      //       error: true
-      //     });
-      //   } else {
-      //     setOrgIdAvailabilityMsg({
-      //       text: "Organization ID is available",
-      //       error: false
-      //     });
-      //   }
-      // }
+      // Code for checking organization ID was previously here
     } catch (error) {
       console.error("Error checking organization ID:", error);
     } finally {
