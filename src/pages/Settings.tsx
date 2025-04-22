@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
@@ -13,7 +12,8 @@ import {
   Calendar, 
   Filter, 
   Check, 
-  User
+  User,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,13 +34,24 @@ import { toast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
+const applyTheme = (theme: string) => {
+  const root = document.documentElement;
+  if (theme === "system") {
+    const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.classList.toggle("dark", isDark);
+    localStorage.setItem("theme", "system");
+  } else {
+    root.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
+  }
+};
+
 const Settings = () => {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  // Settings state
   const [theme, setTheme] = useState('light');
   const [accentColor, setAccentColor] = useState('blue');
   const [defaultLayout, setDefaultLayout] = useState('full-page');
@@ -51,7 +62,6 @@ const Settings = () => {
   const [displayName, setDisplayName] = useState(user?.name || '');
   const [bio, setBio] = useState('Product manager with 5+ years of experience in SaaS.');
 
-  // Mock keyboard shortcuts
   const keyboardShortcuts = [
     { action: 'Navigate to Dashboard', shortcut: 'g then d', enabled: true },
     { action: 'Navigate to Projects', shortcut: 'g then p', enabled: true },
@@ -62,13 +72,17 @@ const Settings = () => {
     { action: 'Close modal', shortcut: 'Esc', enabled: true },
   ];
 
-  // If user is not logged in, redirect to login page
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
   if (!user) {
     navigate('/login');
     return null;
   }
 
   const handleSaveSettings = () => {
+    applyTheme(theme);
     toast({
       title: "Settings saved",
       description: "Your settings have been updated successfully.",
@@ -91,13 +105,16 @@ const Settings = () => {
       />
       
       <div className="flex-1 overflow-auto">
+        <div className="flex items-center pl-4 pt-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="go back">
+            <ArrowLeft />
+          </Button>
+          <h1 className="text-3xl font-bold ml-2">Settings</h1>
+        </div>
         <Header />
         
         <main className="container mx-auto py-6 px-4">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold">Settings</h1>
-            <p className="text-muted-foreground">Manage your account and application preferences</p>
-          </div>
+          <p className="text-muted-foreground mb-6">Manage your account and application preferences</p>
           
           <Tabs defaultValue="appearance" className="w-full">
             <TabsList className="mb-6">

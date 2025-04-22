@@ -1,5 +1,4 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -7,22 +6,22 @@ import { Separator } from "@/components/ui/separator";
 import Header from '@/components/Header';
 import { useAuth } from '@/context/AuthContext';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from "lucide-react";
+import AvatarUpload from "@/components/AvatarUpload";
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+  const [avatar, setAvatar] = useState<string | null>(null);
+
   // If no user is logged in, redirect to login
   useEffect(() => {
     if (!user) {
       navigate('/login');
     }
   }, [user, navigate]);
-  
-  if (!user) {
-    return null; // Don't render anything while redirecting
-  }
-  
+
   // Function to get role badge color
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -38,23 +37,39 @@ const Profile: React.FC = () => {
         return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
     }
   };
-  
+
+  if (!user) {
+    return null; // Don't render anything while redirecting
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Back arrow in header */}
+      <div className="flex items-center p-4">
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="go back">
+          <ArrowLeft />
+        </Button>
+        <h1 className="text-2xl font-bold ml-2">My Profile</h1>
+      </div>
       <Header />
-      
       <main className="flex-1 container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">My Profile</h1>
-        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Profile Card */}
           <Card className="md:col-span-1">
             <CardHeader className="text-center">
-              <Avatar className="w-24 h-24 mx-auto">
-                <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                  {user.name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
+              {avatar ? (
+                <img
+                  src={avatar}
+                  alt="Avatar"
+                  className="w-24 h-24 mx-auto rounded-full object-cover border"
+                />
+              ) : (
+                <Avatar className="w-24 h-24 mx-auto">
+                  <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+                    {user.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+              )}
               <CardTitle className="mt-4">{user.name}</CardTitle>
               <Badge className={`mt-2 ${getRoleBadgeColor(user.role)}`}>
                 {user.role}
@@ -63,6 +78,7 @@ const Profile: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                <AvatarUpload onChange={setAvatar} />
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Organization</h3>
                   <p className="mt-1">{user.organizationName}</p>
@@ -76,9 +92,7 @@ const Profile: React.FC = () => {
                   <p className="mt-1">April 2025</p>
                 </div>
               </div>
-              
               <Separator className="my-6" />
-              
               <div className="text-sm text-center text-muted-foreground">
                 <p className="italic">Role permissions are fixed and cannot be changed after account creation.</p>
               </div>
