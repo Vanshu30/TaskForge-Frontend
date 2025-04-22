@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Clock, Tag, Priority, User } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Tag, User } from "lucide-react"; // Removed 'Priority'
 import Header from '@/components/Header';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import { useAuth } from '@/context/AuthContext';
