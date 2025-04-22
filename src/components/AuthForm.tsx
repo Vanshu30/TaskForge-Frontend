@@ -10,6 +10,7 @@ import { UserRole } from '@/context/AuthContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PasswordInput from "@/components/PasswordInput";
+import ForgotPasswordDialog from "./ForgotPasswordDialog";
 
 export interface LoginFormValues {
   email: string;
@@ -64,6 +65,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
 }) => {
   const isLogin = type === "login";
   const [signupType, setSignupType] = useState<'new' | 'existing'>('new');
+  const [forgotOpen, setForgotOpen] = useState(false);
   const schema = isLogin ? loginSchema : signupSchema;
 
   const form = useForm<LoginFormValues | SignupFormValues>({
@@ -275,6 +277,16 @@ const AuthForm: React.FC<AuthFormProps> = ({
                     </FormItem>
                   )}
                 />
+
+                <div className="flex justify-end text-sm">
+                  <button
+                    type="button"
+                    className="text-primary hover:underline"
+                    onClick={() => setForgotOpen(true)}
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
               </>
             )}
 
@@ -311,6 +323,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
             </Button>
           </form>
         </Form>
+        <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
       </CardContent>
       <CardFooter className="flex justify-center border-t p-4">
         <p className="text-sm text-muted-foreground">
