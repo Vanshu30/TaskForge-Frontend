@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -44,7 +43,7 @@ const signupSchema = z.object({
   confirmPassword: z.string(),
   organizationId: z.string().optional(),
   organizationName: z.string().optional(),
-  role: z.enum(["Admin", "Manager", "Developer", "Viewer"], {
+  role: z.enum(["Admin", "Manager", "Developer", "Viewer", "Project Manager"], {
     required_error: "Please select a role",
   }),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -89,7 +88,6 @@ const AuthForm: React.FC<AuthFormProps> = ({
   const [orgIdAvailabilityMsg, setOrgIdAvailabilityMsg] = React.useState<{text: string, error: boolean} | null>(null);
   const [checkingOrgId, setCheckingOrgId] = React.useState(false);
 
-  // This function is not being used currently, can be removed or updated later
   const checkOrgIdAvailability = async (orgId: string) => {
     if (!orgId || orgId.length < 3) return;
     
@@ -138,39 +136,35 @@ const AuthForm: React.FC<AuthFormProps> = ({
                     </FormItem>
                   )}
                 />
-              </>
-            )}
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="you@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="you@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="••••••••" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {!isLogin && (
-              <>
                 <FormField
                   control={form.control}
                   name="confirmPassword"
@@ -229,9 +223,13 @@ const AuthForm: React.FC<AuthFormProps> = ({
                         </FormControl>
                         <SelectContent>
                           {signupType === 'new' ? (
-                            <SelectItem value="Admin">Admin</SelectItem>
+                            <>
+                              <SelectItem value="Admin">Admin</SelectItem>
+                              <SelectItem value="Project Manager">Project Manager</SelectItem>
+                            </>
                           ) : (
                             <>
+                              <SelectItem value="Project Manager">Project Manager</SelectItem>
                               <SelectItem value="Developer">Developer</SelectItem>
                               <SelectItem value="Viewer">Viewer</SelectItem>
                             </>

@@ -1,48 +1,74 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Calendar } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface AddTaskDialogProps {
   projectId: string;
   onAddTask: (task: any) => void;
+  teamMembers?: {id: string; name: string; email: string}[];
 }
 
-const AddTaskDialog = ({ projectId, onAddTask }: AddTaskDialogProps) => {
+const AddTaskDialog = ({ projectId, onAddTask, teamMembers = [] }: AddTaskDialogProps) => {
   const [open, setOpen] = React.useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  
   const form = useForm({
     defaultValues: {
       title: '',
       description: '',
+      assignee: '',
+      priority: 'medium'
     },
   });
 
   const onSubmit = async (data) => {
     try {
-      // TODO: Add Supabase integration here
+      // Create new task with due date and assignee
+      const selectedAssignee = teamMembers.find(member => member.id === data.assignee);
+      const assigneeData = selectedAssignee 
+        ? {
+            id: selectedAssignee.id,
+            name: selectedAssignee.name,
+            avatar: null,
+          }
+        : {
+            id: 'unassigned',
+            name: 'Unassigned',
+            avatar: null,
+          };
+
       const newTask = {
         id: `task-${Date.now()}`,
         title: data.title,
         description: data.description,
-        priority: 'medium',
-        dueDate: new Date().toISOString(),
-        assignee: {
-          id: 'unassigned',
-          name: 'Unassigned',
-          avatar: null,
-        },
+        priority: data.priority || 'medium',
+        dueDate: selectedDate ? selectedDate.toISOString().split('T')[0] : null,
+        assignee: assigneeData,
         comments: [],
       };
       
       onAddTask(newTask);
       setOpen(false);
       form.reset();
+      setSelectedDate(new Date());
       toast({
         title: "Task created",
         description: "New task has been added to To Do column",
@@ -82,6 +108,61 @@ const AddTaskDialog = ({ projectId, onAddTask }: AddTaskDialogProps) => {
               id="description"
               {...form.register('description')}
             />
+          </div>
+          <div className="space-y-2">
+            <Label>Due Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !selectedDate && "text-muted-foreground"
+                  )}
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="priority">Priority</Label>
+            <Select onValueChange={(value) => form.setValue('priority', value)} defaultValue="medium">
+              <SelectTrigger>
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="assignee">Assign To</Label>
+            <Select onValueChange={(value) => form.setValue('assignee', value)} defaultValue="">
+              <SelectTrigger>
+                <SelectValue placeholder="Select team member" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Unassigned</SelectItem>
+                {teamMembers.map(member => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>

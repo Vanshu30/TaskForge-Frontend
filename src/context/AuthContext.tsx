@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 
-export type UserRole = 'Admin' | 'Manager' | 'Developer' | 'Viewer';
+export type UserRole = 'Admin' | 'Manager' | 'Developer' | 'Viewer' | 'Project Manager';
 
 export interface Organization {
   id: string;

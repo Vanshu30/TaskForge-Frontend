@@ -1,13 +1,16 @@
-
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users } from 'lucide-react';
+import { Users, Plus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import AddTaskDialog from './AddTaskDialog';
 import TaskDialog from './TaskDialog';
 import TaskCard from './TaskCard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useForm } from 'react-hook-form';
 
 const initialColumns = {
   'todo': {
@@ -154,10 +157,121 @@ const initialTasks = {
   },
 };
 
+const AddTeamMemberDialog = ({ onAddMember }) => {
+  const [open, setOpen] = useState(false);
+  const form = useForm({
+    defaultValues: {
+      name: '',
+      email: '',
+    },
+  });
+
+  const onSubmit = (data) => {
+    onAddMember({
+      id: `user-${Date.now()}`,
+      name: data.name,
+      email: data.email,
+    });
+    setOpen(false);
+    form.reset();
+    toast({
+      title: "Team member added",
+      description: `${data.name} has been added to the project team.`
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <Plus className="mr-2 h-4 w-4" />
+          Add Member
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add Team Member</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              {...form.register('name', { required: true })}
+              placeholder="John Doe"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              {...form.register('email', { required: true })}
+              placeholder="john@example.com"
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit">Add Member</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const TeamMembersDialog = ({ teamMembers, onAddMember }) => {
+  const [open, setOpen] = useState(false);
+  
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button onClick={() => {}}>
+          <Users className="mr-2 h-4 w-4" />
+          Team
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Project Team</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-medium">Members ({teamMembers.length})</h3>
+            <AddTeamMemberDialog onAddMember={onAddMember} />
+          </div>
+          {teamMembers.length > 0 ? (
+            <div className="space-y-2">
+              {teamMembers.map((member) => (
+                <div key={member.id} className="flex items-center justify-between p-3 bg-secondary/20 rounded-md">
+                  <div>
+                    <p className="font-medium">{member.name}</p>
+                    <p className="text-sm text-muted-foreground">{member.email}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-4">No team members yet. Add one to get started.</p>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const KanbanBoard = ({ projectId }) => {
   const [columns, setColumns] = useState(initialColumns);
   const [tasks, setTasks] = useState(initialTasks);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [teamMembers, setTeamMembers] = useState([
+    {id: 'user-1', name: 'Alex Johnson', email: 'alex@example.com'},
+    {id: 'user-2', name: 'Maria Garcia', email: 'maria@example.com'},
+    {id: 'user-3', name: 'David Kim', email: 'david@example.com'},
+    {id: 'user-4', name: 'Sarah Wilson', email: 'sarah@example.com'},
+  ]);
 
   const handleDragEnd = (result) => {
     const { destination, source, draggableId } = result;
@@ -231,27 +345,35 @@ const KanbanBoard = ({ projectId }) => {
     setTasks(updatedTasks);
   };
 
+  const handleAddTeamMember = (newMember) => {
+    setTeamMembers([...teamMembers, newMember]);
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Kanban Board</h2>
         <div className="flex gap-2">
-          <Button onClick={() => window.location.href = `/projects/${projectId}/settings#team`}>
-            <Users className="mr-2 h-4 w-4" />
-            Team
-          </Button>
-          <AddTaskDialog projectId={projectId} onAddTask={(task) => {
-            const newTasks = { ...tasks, [task.id]: task };
-            const newColumns = {
-              ...columns,
-              todo: {
-                ...columns.todo,
-                taskIds: [...columns.todo.taskIds, task.id],
-              },
-            };
-            setTasks(newTasks);
-            setColumns(newColumns);
-          }} />
+          <TeamMembersDialog 
+            teamMembers={teamMembers}
+            onAddMember={handleAddTeamMember}
+          />
+          <AddTaskDialog 
+            projectId={projectId} 
+            teamMembers={teamMembers}
+            onAddTask={(task) => {
+              const newTasks = { ...tasks, [task.id]: task };
+              const newColumns = {
+                ...columns,
+                todo: {
+                  ...columns.todo,
+                  taskIds: [...columns.todo.taskIds, task.id],
+                },
+              };
+              setTasks(newTasks);
+              setColumns(newColumns);
+            }} 
+          />
         </div>
       </div>
 
@@ -320,6 +442,7 @@ const KanbanBoard = ({ projectId }) => {
         isOpen={!!selectedTask}
         onClose={() => setSelectedTask(null)}
         onAddComment={handleAddComment}
+        teamMembers={teamMembers}
       />
     </div>
   );

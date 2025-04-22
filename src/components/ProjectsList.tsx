@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,10 @@ import { Badge } from '@/components/ui/badge';
 import { Briefcase, Calendar, Users, Settings, PlusCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 // Mock data until Supabase integration
 const MOCK_PROJECTS = [
@@ -41,6 +46,10 @@ const MOCK_PROJECTS = [
 
 const AddProjectDialog = ({ onAdd }) => {
   const [open, setOpen] = React.useState(false);
+  const [dueDate, setDueDate] = useState<Date | undefined>(
+    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  );
+  
   const form = useForm({
     defaultValues: {
       name: '',
@@ -57,12 +66,13 @@ const AddProjectDialog = ({ onAdd }) => {
         description: data.description,
         tasks: { total: 0, completed: 0 },
         members: 1,
-        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        dueDate: dueDate ? dueDate.toISOString() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       };
       
       onAdd(newProject);
       setOpen(false);
       form.reset();
+      setDueDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
       toast({
         title: "Project created",
         description: "New project has been created successfully",
@@ -103,6 +113,32 @@ const AddProjectDialog = ({ onAdd }) => {
               {...form.register('description')}
             />
           </div>
+          <div className="space-y-2">
+            <Label>Due Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !dueDate && "text-muted-foreground"
+                  )}
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {dueDate ? format(dueDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={dueDate}
+                  onSelect={setDueDate}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
@@ -138,7 +174,7 @@ const ProjectsList = () => {
                   {project.name}
                 </Link>
                 <Badge variant="outline" className="ml-2">
-                  {Math.round((project.tasks.completed / project.tasks.total) * 100)}%
+                  {Math.round((project.tasks.completed / (project.tasks.total || 1)) * 100)}%
                 </Badge>
               </CardTitle>
               <CardDescription>{project.description}</CardDescription>
@@ -161,7 +197,7 @@ const ProjectsList = () => {
                 <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-primary" 
-                    style={{ width: `${(project.tasks.completed / project.tasks.total) * 100}%` }}
+                    style={{ width: `${(project.tasks.completed / (project.tasks.total || 1)) * 100}%` }}
                   />
                 </div>
               </div>
