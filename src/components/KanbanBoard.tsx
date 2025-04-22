@@ -1,23 +1,12 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Calendar as CalendarIcon, 
-  Clock, 
-  Tag, 
-  User,
-  MessageSquare,
-  PlusCircle,
-  ChevronRight,
-  Users
-} from 'lucide-react';
+import { Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import AddTaskDialog from './AddTaskDialog';
+import TaskDialog from './TaskDialog';
+import TaskCard from './TaskCard';
 
-// Mock data until Supabase integration
 const initialColumns = {
   'todo': {
     id: 'todo',
@@ -163,22 +152,10 @@ const initialTasks = {
   },
 };
 
-const getPriorityBadge = (priority) => {
-  switch (priority) {
-    case 'high':
-      return <Badge className="bg-red-500">High</Badge>;
-    case 'medium':
-      return <Badge className="bg-yellow-500">Medium</Badge>;
-    case 'low':
-      return <Badge className="bg-green-500">Low</Badge>;
-    default:
-      return null;
-  }
-};
-
 const KanbanBoard = ({ projectId }) => {
   const [columns, setColumns] = useState(initialColumns);
   const [tasks, setTasks] = useState(initialTasks);
+  const [selectedTask, setSelectedTask] = useState(null);
 
   const handleDragEnd = (result) => {
     const { destination, source, draggableId } = result;
@@ -196,12 +173,10 @@ const KanbanBoard = ({ projectId }) => {
     const sourceColumn = columns[source.droppableId];
     const destinationColumn = columns[destination.droppableId];
     
-    // Get column order to determine if this is a backwards move
     const columnOrder = ['todo', 'in-progress', 'review', 'done'];
     const sourceIndex = columnOrder.indexOf(sourceColumn.id);
     const destIndex = columnOrder.indexOf(destinationColumn.id);
     
-    // If we're trying to move backwards (to a column with a lower index)
     if (destIndex < sourceIndex) {
       toast({
         title: "Cannot move task backwards",
@@ -232,6 +207,28 @@ const KanbanBoard = ({ projectId }) => {
     setColumns(newColumns);
   };
 
+  const handleAddComment = (taskId: string, commentText: string) => {
+    const updatedTasks = {
+      ...tasks,
+      [taskId]: {
+        ...tasks[taskId],
+        comments: [
+          ...tasks[taskId].comments,
+          {
+            id: `comment-${Date.now()}`,
+            text: commentText,
+            user: {
+              name: 'Current User',
+              avatar: null,
+            },
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      },
+    };
+    setTasks(updatedTasks);
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
@@ -242,7 +239,6 @@ const KanbanBoard = ({ projectId }) => {
             Team
           </Button>
           <AddTaskDialog projectId={projectId} onAddTask={(task) => {
-            // Add task to todo column by default
             const newTasks = { ...tasks, [task.id]: task };
             const newColumns = {
               ...columns,
@@ -259,9 +255,15 @@ const KanbanBoard = ({ projectId }) => {
 
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 overflow-x-auto">
-          {Object.values(columns).map((column) => (
-            <div key={column.id} className="min-w-[280px]">
-              <div className="bg-muted rounded-t-md p-3 border-x border-t border-border">
+          {Object.entries(columns).map(([columnId, column]) => (
+            <div key={columnId} className="min-w-[280px]">
+              <div className={`rounded-t-md p-3 border-x border-t border-border font-medium
+                ${columnId === 'todo' ? 'bg-blue-50' :
+                  columnId === 'in-progress' ? 'bg-amber-50' :
+                  columnId === 'review' ? 'bg-purple-50' :
+                  'bg-green-50'
+                }`}
+              >
                 <h3 className="font-medium flex items-center">
                   {column.title}
                   <Badge variant="outline" className="ml-2">
@@ -270,59 +272,34 @@ const KanbanBoard = ({ projectId }) => {
                 </h3>
               </div>
               
-              <Droppable droppableId={column.id}>
+              <Droppable droppableId={columnId}>
                 {(provided) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className="bg-muted/50 rounded-b-md p-2 min-h-[500px] border border-border"
+                    className={`p-2 min-h-[500px] border border-border rounded-b-md
+                      ${columnId === 'todo' ? 'bg-blue-50/50' :
+                        columnId === 'in-progress' ? 'bg-amber-50/50' :
+                        columnId === 'review' ? 'bg-purple-50/50' :
+                        'bg-green-50/50'
+                      }`
+                    }
                   >
                     {column.taskIds.map((taskId, index) => {
                       const task = tasks[taskId];
                       return (
                         <Draggable key={task.id} draggableId={task.id} index={index}>
                           {(provided) => (
-                            <Card
+                            <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className="mb-3 bg-white"
                             >
-                              <CardHeader className="p-3 pb-0">
-                                <div className="flex justify-between items-start">
-                                  <Badge variant="outline" className="mb-1">
-                                    {task.id.replace('task-', 'TASK-')}
-                                  </Badge>
-                                  {getPriorityBadge(task.priority)}
-                                </div>
-                                <CardTitle className="text-sm font-medium">{task.title}</CardTitle>
-                                <CardDescription className="text-xs line-clamp-2">
-                                  {task.description}
-                                </CardDescription>
-                              </CardHeader>
-                              <CardContent className="p-3 pt-0">
-                                <div className="flex items-center text-xs text-muted-foreground mt-2">
-                                  <CalendarIcon className="mr-1 h-3 w-3" />
-                                  <span>{new Date(task.dueDate).toLocaleDateString()}</span>
-                                </div>
-                              </CardContent>
-                              <CardFooter className="p-3 pt-0 flex justify-between">
-                                <div className="flex items-center gap-1">
-                                  <Avatar className="h-6 w-6">
-                                    <AvatarFallback className="text-[10px]">
-                                      {task.assignee.name.split(' ').map(n => n[0]).join('')}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="flex items-center text-xs text-muted-foreground">
-                                    <MessageSquare className="h-3 w-3 mr-1" />
-                                    {task.comments.length}
-                                  </div>
-                                </div>
-                                <Button variant="ghost" size="icon" className="h-6 w-6">
-                                  <ChevronRight className="h-4 w-4" />
-                                </Button>
-                              </CardFooter>
-                            </Card>
+                              <TaskCard 
+                                task={task}
+                                onClick={() => setSelectedTask(task)}
+                              />
+                            </div>
                           )}
                         </Draggable>
                       );
@@ -335,6 +312,13 @@ const KanbanBoard = ({ projectId }) => {
           ))}
         </div>
       </DragDropContext>
+
+      <TaskDialog
+        task={selectedTask}
+        isOpen={!!selectedTask}
+        onClose={() => setSelectedTask(null)}
+        onAddComment={handleAddComment}
+      />
     </div>
   );
 };
