@@ -14,6 +14,7 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
+  Briefcase,
 } from 'lucide-react';
 
 interface MenuItemProps {
@@ -161,7 +162,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               onClick={() => handleNavigation('/dashboard')}
             />
             <MenuItem 
-              icon={<CheckCircle size={20} />} 
+              icon={<Briefcase size={20} />} 
               label={collapsed ? '' : 'Projects'} 
               active={location.pathname === '/projects'}
               onClick={() => handleNavigation('/projects')}
