@@ -290,12 +290,7 @@ const KanbanBoard = ({ projectId }) => {
   const [columns, setColumns] = useState(emptyColumns);
   const [tasks, setTasks] = useState({});
   const [selectedTask, setSelectedTask] = useState(null);
-  const [teamMembers, setTeamMembers] = useState([
-    {id: 'user-1', name: 'Alex Johnson', email: 'alex@example.com'},
-    {id: 'user-2', name: 'Maria Garcia', email: 'maria@example.com'},
-    {id: 'user-3', name: 'David Kim', email: 'david@example.com'},
-    {id: 'user-4', name: 'Sarah Wilson', email: 'sarah@example.com'},
-  ]);
+  const [teamMembers, setTeamMembers] = useState([]);
 
   useEffect(() => {
     const storedTasks = localStorage.getItem(`tasks_${projectId}`);

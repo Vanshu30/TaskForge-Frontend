@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -21,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Mail, Phone, Calendar } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 
 export interface TeamMember {
   id: string;
@@ -36,9 +35,10 @@ interface TeamTabProps {
   projectId: string;
   teamMembers: TeamMember[];
   onAddMember: (member: TeamMember) => void;
+  onRemoveMember?: (memberId: string) => void;
 }
 
-const TeamTab: React.FC<TeamTabProps> = ({ projectId, teamMembers, onAddMember }) => {
+const TeamTab: React.FC<TeamTabProps> = ({ projectId, teamMembers, onAddMember, onRemoveMember }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -48,14 +48,21 @@ const TeamTab: React.FC<TeamTabProps> = ({ projectId, teamMembers, onAddMember }
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {teamMembers.map(member => (
-          <TeamMemberCard key={member.id} member={member} />
+          <TeamMemberCard 
+            key={member.id} 
+            member={member} 
+            onRemove={onRemoveMember}
+          />
         ))}
       </div>
     </div>
   );
 };
 
-const TeamMemberCard: React.FC<{ member: TeamMember }> = ({ member }) => {
+const TeamMemberCard: React.FC<{ 
+  member: TeamMember;
+  onRemove?: (memberId: string) => void;
+}> = ({ member, onRemove }) => {
   const statusColors = {
     active: "bg-green-500",
     away: "bg-yellow-500",
@@ -99,10 +106,27 @@ const TeamMemberCard: React.FC<{ member: TeamMember }> = ({ member }) => {
         >
           {member.status || 'active'}
         </Badge>
-        <Button variant="ghost" size="sm">
-          <Calendar className="h-3.5 w-3.5 mr-1" />
-          Schedule
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm">
+            <Calendar className="h-3.5 w-3.5 mr-1" />
+            Schedule
+          </Button>
+          {onRemove && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                onRemove(member.id);
+                toast({
+                  title: "Team member removed",
+                  description: `${member.name} has been removed from the project.`
+                });
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

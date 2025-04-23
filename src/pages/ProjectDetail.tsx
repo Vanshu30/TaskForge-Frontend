@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -50,12 +49,7 @@ const ProjectDetail = () => {
           setProject(foundProject);
           
           // Initialize team members (normally from database)
-          setTeamMembers([
-            {id: 'user-1', name: 'Alex Johnson', email: 'alex@example.com', role: 'Project Manager', status: 'active'},
-            {id: 'user-2', name: 'Maria Garcia', email: 'maria@example.com', role: 'Designer', status: 'busy'},
-            {id: 'user-3', name: 'David Kim', email: 'david@example.com', role: 'Developer', status: 'away'},
-            {id: 'user-4', name: 'Sarah Wilson', email: 'sarah@example.com', role: 'QA Engineer', status: 'active'},
-          ]);
+          setTeamMembers([]);
         } else {
           console.error("Project not found with ID:", projectId);
         }
@@ -153,6 +147,11 @@ const ProjectDetail = () => {
   const handleAddTeamMember = (member) => {
     setTeamMembers([...teamMembers, member]);
   };
+
+  // Handle removing team members
+  const handleRemoveTeamMember = (memberId: string) => {
+    setTeamMembers(teamMembers.filter(member => member.id !== memberId));
+  };
   
   // Handle adding calendar events
   const handleAddEvent = (event: CalendarEvent) => {
@@ -240,7 +239,8 @@ const ProjectDetail = () => {
               <TeamTab 
                 projectId={projectId} 
                 teamMembers={teamMembers} 
-                onAddMember={handleAddTeamMember} 
+                onAddMember={handleAddTeamMember}
+                onRemoveMember={handleRemoveTeamMember}
               />
             </TabsContent>
             
