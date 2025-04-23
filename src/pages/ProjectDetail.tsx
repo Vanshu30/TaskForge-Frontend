@@ -1,12 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import KanbanBoard from '@/components/KanbanBoard';
+import TeamTab from '@/components/TeamTab';
+import ProjectCalendar, { CalendarEvent } from '@/components/ProjectCalendar';
+import ProjectTimeline from '@/components/ProjectTimeline';
 import { useAuth } from '@/context/AuthContext';
-import { Menu, Settings, Users, CalendarDays, ArrowLeft } from 'lucide-react';
+import { Menu, Settings, Users, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -36,8 +39,126 @@ const ProjectDetail = () => {
   const navigate = useNavigate();
   const { projectId } = useParams();
   
-  // Get project details
-  const project = projectId ? MOCK_PROJECTS[projectId] : null;
+  // Project state
+  const [project, setProject] = useState<any>(null);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  
+  // Initialize project data
+  useEffect(() => {
+    if (projectId) {
+      // Get project details
+      const projectData = MOCK_PROJECTS[projectId];
+      if (projectData) {
+        setProject(projectData);
+        
+        // Initialize team members (normally from database)
+        setTeamMembers([
+          {id: 'user-1', name: 'Alex Johnson', email: 'alex@example.com', role: 'Project Manager', status: 'active'},
+          {id: 'user-2', name: 'Maria Garcia', email: 'maria@example.com', role: 'Designer', status: 'busy'},
+          {id: 'user-3', name: 'David Kim', email: 'david@example.com', role: 'Developer', status: 'away'},
+          {id: 'user-4', name: 'Sarah Wilson', email: 'sarah@example.com', role: 'QA Engineer', status: 'active'},
+        ]);
+      }
+    }
+  }, [projectId]);
+
+  // Get tasks from Kanban component
+  useEffect(() => {
+    // This would normally come from a database query
+    const mockTasks = {
+      'task-1': {
+        id: 'task-1',
+        title: 'Research competitors',
+        description: 'Analyze top 5 competitors and identify opportunities',
+        priority: 'medium',
+        dueDate: '2025-04-30',
+        assignee: { id: 'user-1', name: 'Alex Johnson', avatar: null },
+        comments: []
+      },
+      'task-2': {
+        id: 'task-2',
+        title: 'Create wireframes',
+        description: 'Design wireframes for homepage and product pages',
+        priority: 'high',
+        dueDate: '2025-05-05',
+        assignee: { id: 'user-2', name: 'Maria Garcia', avatar: null },
+        comments: []
+      },
+      'task-3': {
+        id: 'task-3',
+        title: 'Define brand guidelines',
+        description: 'Update brand style guide with new colors and typography',
+        priority: 'low',
+        dueDate: '2025-05-10',
+        assignee: { id: 'user-3', name: 'David Kim', avatar: null },
+        comments: []
+      },
+      'task-4': {
+        id: 'task-4',
+        title: 'Customer interviews',
+        description: 'Conduct interviews with 10 key customers',
+        priority: 'high',
+        dueDate: '2025-04-25',
+        assignee: { id: 'user-4', name: 'Sarah Wilson', avatar: null },
+        comments: []
+      },
+      'task-5': {
+        id: 'task-5',
+        title: 'User journey mapping',
+        description: 'Create user journey maps for primary personas',
+        priority: 'medium',
+        dueDate: '2025-05-01',
+        assignee: { id: 'user-2', name: 'Maria Garcia', avatar: null },
+        comments: []
+      }
+    };
+    
+    setTasks(Object.values(mockTasks));
+    
+    // Initialize calendar events based on task due dates
+    const taskEvents: CalendarEvent[] = Object.values(mockTasks).map(task => ({
+      id: `event-${task.id}`,
+      title: `Due: ${task.title}`,
+      description: task.description,
+      date: new Date(task.dueDate).toISOString(),
+      type: 'deadline',
+      relatedTaskId: task.id,
+      assignedTo: task.assignee.id
+    }));
+    
+    // Add some additional events
+    const additionalEvents: CalendarEvent[] = [
+      {
+        id: 'event-meeting-1',
+        title: 'Team Kickoff Meeting',
+        description: 'Initial project planning and role assignments',
+        date: new Date(2025, 3, 20).toISOString(),
+        type: 'meeting'
+      },
+      {
+        id: 'event-milestone-1',
+        title: 'Design Phase Complete',
+        description: 'All designs should be finalized and ready for development',
+        date: new Date(2025, 4, 15).toISOString(),
+        type: 'milestone'
+      }
+    ];
+    
+    setEvents([...taskEvents, ...additionalEvents]);
+    
+  }, []);
+
+  // Handle adding team members
+  const handleAddTeamMember = (member) => {
+    setTeamMembers([...teamMembers, member]);
+  };
+  
+  // Handle adding calendar events
+  const handleAddEvent = (event: CalendarEvent) => {
+    setEvents([...events, event]);
+  };
 
   // If user is not logged in, redirect to login page
   if (!user) {
@@ -86,10 +207,6 @@ const ProjectDetail = () => {
                 <p className="text-muted-foreground">{project.description}</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline">
-                  <Users className="h-4 w-4 mr-2" />
-                  Team
-                </Button>
                 <Link to={`/projects/${projectId}/settings`}>
                   <Button variant="outline">
                     <Settings className="h-4 w-4 mr-2" />
@@ -103,6 +220,7 @@ const ProjectDetail = () => {
           <Tabs defaultValue="board" className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="board">Board</TabsTrigger>
+              <TabsTrigger value="team">Team</TabsTrigger>
               <TabsTrigger value="calendar">Calendar</TabsTrigger>
               <TabsTrigger value="timeline">Timeline</TabsTrigger>
             </TabsList>
@@ -111,22 +229,25 @@ const ProjectDetail = () => {
               <KanbanBoard projectId={projectId} />
             </TabsContent>
             
+            <TabsContent value="team">
+              <TeamTab 
+                projectId={projectId} 
+                teamMembers={teamMembers} 
+                onAddMember={handleAddTeamMember} 
+              />
+            </TabsContent>
+            
             <TabsContent value="calendar">
-              <div className="flex items-center justify-center h-64 bg-muted rounded-md">
-                <div className="text-center">
-                  <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground" />
-                  <p className="mt-2 text-muted-foreground">Calendar view coming soon</p>
-                </div>
-              </div>
+              <ProjectCalendar 
+                events={events}
+                teamMembers={teamMembers}
+                tasks={tasks}
+                onAddEvent={handleAddEvent}
+              />
             </TabsContent>
             
             <TabsContent value="timeline">
-              <div className="flex items-center justify-center h-64 bg-muted rounded-md">
-                <div className="text-center">
-                  <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground" />
-                  <p className="mt-2 text-muted-foreground">Timeline view coming soon</p>
-                </div>
-              </div>
+              <ProjectTimeline tasks={tasks} />
             </TabsContent>
           </Tabs>
         </main>

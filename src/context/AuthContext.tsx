@@ -149,12 +149,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         orgId = generateOrganizationId();
       } else {
         // Verify that the organization exists
-        const organizations = listOrganizations();
-        const existingOrg = organizations.find(org => org.id === orgId);
+        const storedOrgs = localStorage.getItem('organizations');
+        const orgs = storedOrgs ? JSON.parse(storedOrgs) : {};
+        const existingOrg = Object.entries(orgs).find(([id]) => id === orgId);
         if (!existingOrg) {
           throw new Error('Organization ID not found');
         }
-        orgName = existingOrg.name;
+        orgName = existingOrg[1] && typeof existingOrg[1] === 'object' ? (existingOrg[1] as {name: string}).name : '';
       }
       
       // Create user with ID and organization info
@@ -167,10 +168,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // If this is a new organization, register it
       if (!userData.organizationId) {
-        organizations[orgId] = {
-          name: orgName
-        };
-        localStorage.setItem('organizations', JSON.stringify(organizations));
+        const storedOrgs = localStorage.getItem('organizations');
+        const orgs = storedOrgs ? JSON.parse(storedOrgs) : {};
+        orgs[orgId] = { name: orgName };
+        localStorage.setItem('organizations', JSON.stringify(orgs));
       }
       
       // Save user
@@ -178,7 +179,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('users', JSON.stringify(users));
       
       // Remove password before storing in state
-      const { password: _, ...userWithoutPassword } = newUser;
+      const { password, ...userWithoutPassword } = newUser;
       
       localStorage.setItem('user', JSON.stringify(userWithoutPassword));
       setUser(userWithoutPassword);
