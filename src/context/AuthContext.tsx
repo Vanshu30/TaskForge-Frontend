@@ -1,266 +1,254 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 
+// Define the User type
 export type UserRole = 'Admin' | 'Manager' | 'Developer' | 'Viewer' | 'Project Manager';
-
-export interface Organization {
-  id: string;
-  name: string;
-}
 
 export interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
-  organizationId: string;
-  organizationName: string;
+  organizationId?: string;
+  organizationName?: string;
+  avatar?: string | null;
 }
 
+// Define Auth context value type
 interface AuthContextType {
   user: User | null;
-  loading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (userData: {
-    name: string;
-    email: string;
-    password: string;
-    organizationId?: string;
-    organizationName?: string;
-    role: UserRole;
-  }) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (data: any) => Promise<boolean>;
   logout: () => void;
-  generateOrganizationId: () => string;
-  listOrganizations: () => Organization[];
+  loading: boolean;
+  isAuthenticated: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create Auth context
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  login: async () => false,
+  signup: async () => false,
+  logout: () => {},
+  loading: true,
+  isAuthenticated: false,
+});
 
-// Mock database for organizations - in a real app this would be in a database
-const organizations: Record<string, { name: string }> = {};
+// Custom hook for using auth context
+export const useAuth = () => useContext(AuthContext);
 
+// AuthProvider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
+  // Check if user is authenticated on initial load
   useEffect(() => {
-    // Check if user is already logged in
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
+        localStorage.removeItem('currentUser');
+      }
     }
     setLoading(false);
   }, []);
 
-  const generateOrganizationId = () => {
-    const prefix = 'org';
-    const timestamp = Date.now().toString(36);
-    const randomStr = Math.random().toString(36).substring(2, 6);
-    const orgId = `${prefix}-${timestamp}-${randomStr}`;
-    return orgId;
-  };
-
-  const listOrganizations = () => {
-    const storedOrgs = localStorage.getItem('organizations');
-    const orgs = storedOrgs ? JSON.parse(storedOrgs) : {};
-    return Object.entries(orgs).map(([id, org]: [string, any]) => ({
-      id,
-      name: org.name
-    }));
-  };
-
-  const login = async (email: string, password: string) => {
+  // Login function
+  const login = async (email: string, password: string): Promise<boolean> => {
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
+      // Log debugging info
+      console.info('All localStorage keys:', Object.keys(localStorage));
+      console.info('Raw users from localStorage:', localStorage.getItem('users'));
+      console.info('Logging in with:', email, password);
+
+      // Get users from localStorage
+      const usersData = localStorage.getItem('users');
+      const users = usersData ? JSON.parse(usersData) : [];
       
-      // This is just a mock implementation
-      // In a real app, this would be an API call to your authentication service
-      const storedUsers = localStorage.getItem('users');
-      
-      // Debug: Log what's in localStorage
-      console.log('All localStorage keys:', Object.keys(localStorage));
-      console.log('Raw users from localStorage:', storedUsers);
-      
-      const users = storedUsers ? JSON.parse(storedUsers) : [];
-      
-      console.log('Logging in with:', email, password);
-      console.log('Available users:', users);
-      
-      // Use case-insensitive email comparison first to check if user exists
-      const userWithEmail = users.find(
-        (u: any) => u.email.toLowerCase() === email.toLowerCase()
+      console.info('Available users:', users);
+
+      // Find user with matching email and password
+      const foundUser = users.find(
+        (u: any) => u.email === email && u.password === password
       );
-      
-      if (!userWithEmail) {
-        throw new Error('User not found. Please check your email or sign up.');
+
+      if (!foundUser) {
+        toast({
+          title: 'Login failed',
+          description: 'Invalid email or password.',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return false;
       }
-      
-      // Then check if password matches
-      if (userWithEmail.password !== password) {
-        throw new Error('Incorrect password. Please try again.');
-      }
-      
-      const foundUser = userWithEmail; // User exists and password matches
-      
-      // Remove password before storing user in state
-      const { password: _, ...userWithoutPassword } = foundUser;
-      
-      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-      setUser(userWithoutPassword);
+
+      // Create user object
+      const userData: User = {
+        id: foundUser.id,
+        name: foundUser.name,
+        email: foundUser.email,
+        role: foundUser.role,
+        organizationId: foundUser.organizationId,
+        organizationName: foundUser.organizationName,
+        avatar: foundUser.avatar || null,
+      };
+
+      // Store in localStorage and state
+      localStorage.setItem('currentUser', JSON.stringify(userData));
+      setUser(userData);
       
       toast({
-        title: 'Welcome back!',
-        description: `You're logged in as ${userWithoutPassword.name}`,
+        title: 'Login successful',
+        description: 'Welcome back!',
       });
       
-      navigate('/dashboard');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'An error occurred';
-      setError(message);
-      toast({
-        variant: 'destructive',
-        title: 'Login failed',
-        description: message,
-      });
-      throw err; // Re-throw the error to be caught by the Login component
-    } finally {
       setLoading(false);
+      navigate('/dashboard');
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: 'Login failed',
+        description: 'An unexpected error occurred. Please try again.',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return false;
     }
   };
 
-  const signup = async (userData: {
-    name: string;
-    email: string;
-    password: string;
-    organizationId?: string;
-    organizationName?: string;
-    role: UserRole;
-  }) => {
+  // Signup function
+  const signup = async (data: any): Promise<boolean> => {
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
-      
-      // Debug: Log localStorage state before signup
-      console.log('localStorage before signup:', Object.keys(localStorage));
-      
-      const storedUsers = localStorage.getItem('users');
-      console.log('Raw users before signup:', storedUsers);
-      
-      const users = storedUsers ? JSON.parse(storedUsers) : [];
-      
-      // Check if email is already registered
-      if (users.some((u: any) => u.email.toLowerCase() === userData.email.toLowerCase())) {
-        throw new Error('Email already registered');
+      // Log debugging info
+      console.info('localStorage before signup:', Object.keys(localStorage));
+      console.info('Raw users before signup:', localStorage.getItem('users'));
+
+      // Get current users or initialize empty array
+      const usersData = localStorage.getItem('users');
+      const users = usersData ? JSON.parse(usersData) : [];
+
+      // Check if email already exists
+      if (users.some((u: any) => u.email === data.email)) {
+        toast({
+          title: 'Registration failed',
+          description: 'Email is already registered.',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return false;
       }
 
-      let orgId = userData.organizationId;
-      let orgName = userData.organizationName;
-
-      // If no organization ID is provided, this is a new organization
-      if (!orgId) {
-        if (!orgName) {
-          throw new Error('Organization name is required for new organizations');
-        }
-        orgId = generateOrganizationId();
-      } else {
-        // Verify that the organization exists
-        const storedOrgs = localStorage.getItem('organizations');
-        const orgs = storedOrgs ? JSON.parse(storedOrgs) : {};
-        const existingOrg = Object.entries(orgs).find(([id]) => id === orgId);
-        if (!existingOrg) {
-          throw new Error('Organization ID not found');
-        }
-        orgName = existingOrg[1] && typeof existingOrg[1] === 'object' ? (existingOrg[1] as {name: string}).name : '';
-      }
-      
-      // Create user with ID and organization info
+      // Create new user with ID
       const newUser = {
-        ...userData,
+        ...data,
         id: Date.now().toString(),
-        organizationId: orgId,
-        organizationName: orgName,
       };
       
-      // If this is a new organization, register it
-      if (!userData.organizationId) {
-        const storedOrgs = localStorage.getItem('organizations');
-        const orgs = storedOrgs ? JSON.parse(storedOrgs) : {};
-        orgs[orgId] = { name: orgName };
-        localStorage.setItem('organizations', JSON.stringify(orgs));
+      console.info('User registered:', newUser);
+
+      // Store new user
+      const updatedUsers = [...users, newUser];
+      localStorage.setItem('users', JSON.stringify(updatedUsers));
+      console.info('All users after registration:', updatedUsers);
+      console.info('localStorage after signup:', Object.keys(localStorage));
+
+      // Update organizations
+      if (data.organizationName) {
+        const organizationsData = localStorage.getItem('organizations');
+        const organizations = organizationsData ? JSON.parse(organizationsData) : [];
+        
+        // Create new organization if creating one
+        const orgId = data.organizationId || `org-${Math.random().toString(36).substr(2, 9)}`;
+        
+        if (!data.organizationId) {
+          // Creating new org
+          const newOrg = {
+            id: orgId,
+            name: data.organizationName,
+            owner: data.email,
+            members: [{ id: newUser.id, name: data.name, email: data.email, role: data.role }],
+            createdAt: new Date().toISOString(),
+          };
+          
+          localStorage.setItem('organizations', JSON.stringify([...organizations, newOrg]));
+        } else {
+          // Joining existing org
+          const existingOrgIndex = organizations.findIndex((o: any) => o.id === data.organizationId);
+          if (existingOrgIndex >= 0) {
+            organizations[existingOrgIndex].members.push({
+              id: newUser.id,
+              name: data.name,
+              email: data.email,
+              role: data.role
+            });
+            localStorage.setItem('organizations', JSON.stringify(organizations));
+          }
+        }
       }
-      
-      // Save user
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
-      
-      console.log('User registered:', newUser);
-      console.log('All users after registration:', users);
-      console.log('localStorage after signup:', Object.keys(localStorage));
-      
-      // Remove password before storing in state
-      const { password, ...userWithoutPassword } = newUser;
-      
-      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-      setUser(userWithoutPassword);
+
+      // Create user object
+      const userData: User = {
+        id: newUser.id,
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        organizationId: data.organizationId,
+        organizationName: data.organizationName,
+        avatar: null,
+      };
+
+      // Store in localStorage and state
+      localStorage.setItem('currentUser', JSON.stringify(userData));
+      setUser(userData);
       
       toast({
-        title: 'Account created!',
-        description: `Welcome to TaskFlow, ${userWithoutPassword.name}!`,
+        title: 'Registration successful',
+        description: 'Your account has been created.',
       });
       
-      navigate('/dashboard');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'An error occurred';
-      setError(message);
-      toast({
-        variant: 'destructive',
-        title: 'Signup failed',
-        description: message,
-      });
-    } finally {
       setLoading(false);
+      navigate('/dashboard');
+      return true;
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast({
+        title: 'Registration failed',
+        description: 'An unexpected error occurred. Please try again.',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return false;
     }
   };
 
+  // Logout function
   const logout = () => {
-    localStorage.removeItem('user');
+    localStorage.removeItem('currentUser');
     setUser(null);
-    navigate('/');
+    navigate('/login');
     toast({
       title: 'Logged out',
-      description: 'You have been successfully logged out',
+      description: 'You have been logged out successfully.',
     });
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        error,
-        login,
-        signup,
-        logout,
-        generateOrganizationId,
-        listOrganizations,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  const value = {
+    user,
+    login,
+    signup,
+    logout,
+    loading,
+    isAuthenticated: !!user,
+  };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
