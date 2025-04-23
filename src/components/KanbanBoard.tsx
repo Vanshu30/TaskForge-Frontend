@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +12,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 
-const initialColumns = {
+const emptyColumns = {
+  'todo': {
+    id: 'todo',
+    title: 'To Do',
+    taskIds: [],
+  },
+  'in-progress': {
+    id: 'in-progress',
+    title: 'In Progress',
+    taskIds: [],
+  },
+  'review': {
+    id: 'review',
+    title: 'Review',
+    taskIds: [],
+  },
+  'done': {
+    id: 'done',
+    title: 'Done',
+    taskIds: [],
+  },
+};
+
+const demoColumns = {
   'todo': {
     id: 'todo',
     title: 'To Do',
@@ -263,8 +286,9 @@ const TeamMembersDialog = ({ teamMembers, onAddMember }) => {
 };
 
 const KanbanBoard = ({ projectId }) => {
-  const [columns, setColumns] = useState(initialColumns);
-  const [tasks, setTasks] = useState(initialTasks);
+  const [isNewProject, setIsNewProject] = useState(true);
+  const [columns, setColumns] = useState(emptyColumns);
+  const [tasks, setTasks] = useState({});
   const [selectedTask, setSelectedTask] = useState(null);
   const [teamMembers, setTeamMembers] = useState([
     {id: 'user-1', name: 'Alex Johnson', email: 'alex@example.com'},
@@ -272,6 +296,24 @@ const KanbanBoard = ({ projectId }) => {
     {id: 'user-3', name: 'David Kim', email: 'david@example.com'},
     {id: 'user-4', name: 'Sarah Wilson', email: 'sarah@example.com'},
   ]);
+
+  useEffect(() => {
+    const storedTasks = localStorage.getItem(`tasks_${projectId}`);
+    const storedColumns = localStorage.getItem(`columns_${projectId}`);
+    
+    if (storedTasks && storedColumns) {
+      setTasks(JSON.parse(storedTasks));
+      setColumns(JSON.parse(storedColumns));
+      setIsNewProject(false);
+    } else {
+      setTasks({});
+      setColumns(emptyColumns);
+      setIsNewProject(true);
+      
+      localStorage.setItem(`tasks_${projectId}`, JSON.stringify({}));
+      localStorage.setItem(`columns_${projectId}`, JSON.stringify(emptyColumns));
+    }
+  }, [projectId]);
 
   const handleDragEnd = (result) => {
     const { destination, source, draggableId } = result;
@@ -320,28 +362,30 @@ const KanbanBoard = ({ projectId }) => {
     };
 
     setColumns(newColumns);
+    localStorage.setItem(`columns_${projectId}`, JSON.stringify(newColumns));
   };
 
   const handleAddComment = (taskId: string, commentText: string) => {
+    if (!tasks[taskId]) return;
+    
     const updatedTasks = {
       ...tasks,
       [taskId]: {
         ...tasks[taskId],
         comments: [
-          ...tasks[taskId].comments,
+          ...(tasks[taskId].comments || []),
           {
             id: `comment-${Date.now()}`,
             text: commentText,
-            user: {
-              name: 'Current User',
-              avatar: null,
-            },
+            user: 'Current User',
             timestamp: new Date().toISOString(),
           },
         ],
       },
     };
+    
     setTasks(updatedTasks);
+    localStorage.setItem(`tasks_${projectId}`, JSON.stringify(updatedTasks));
   };
 
   const handleAddTeamMember = (newMember) => {
@@ -371,6 +415,9 @@ const KanbanBoard = ({ projectId }) => {
               };
               setTasks(newTasks);
               setColumns(newColumns);
+              
+              localStorage.setItem(`tasks_${projectId}`, JSON.stringify(newTasks));
+              localStorage.setItem(`columns_${projectId}`, JSON.stringify(newColumns));
             }} 
           />
         </div>
@@ -410,8 +457,9 @@ const KanbanBoard = ({ projectId }) => {
                   >
                     {column.taskIds.map((taskId, index) => {
                       const task = tasks[taskId];
+                      if (!task) return null;
                       return (
-                        <Draggable key={task.id} draggableId={task.id} index={index}>
+                        <Draggable key={taskId} draggableId={taskId} index={index}>
                           {(provided) => (
                             <div
                               ref={provided.innerRef}
@@ -436,13 +484,15 @@ const KanbanBoard = ({ projectId }) => {
         </div>
       </DragDropContext>
 
-      <TaskDialog
-        task={selectedTask}
-        isOpen={!!selectedTask}
-        onClose={() => setSelectedTask(null)}
-        onAddComment={handleAddComment}
-        teamMembers={teamMembers}
-      />
+      {selectedTask && (
+        <TaskDialog
+          task={selectedTask}
+          isOpen={!!selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onAddComment={handleAddComment}
+          teamMembers={teamMembers}
+        />
+      )}
     </div>
   );
 };
