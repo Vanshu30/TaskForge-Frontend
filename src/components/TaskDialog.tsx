@@ -23,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { toast } from '@/hooks/use-toast';
 
 interface TaskDialogProps {
   task: any;
@@ -78,11 +79,27 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
   };
 
   const handleDelete = () => {
-    setShowDeleteConfirm(false);
-    if (onDeleteTask) {
-      onDeleteTask(task.id);
+    try {
+      console.log("Deleting task:", task.id);
+      setShowDeleteConfirm(false);
+      
+      if (onDeleteTask) {
+        onDeleteTask(task.id);
+        toast({
+          title: "Task deleted",
+          description: "The task has been removed successfully"
+        });
+      }
+      
+      onClose();
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete task",
+        variant: "destructive",
+      });
     }
-    onClose();
   };
 
   if (!task) return null;

@@ -40,17 +40,14 @@ const ProjectDetail = () => {
   const navigate = useNavigate();
   const { projectId } = useParams();
   
-  // Project state
   const [project, setProject] = useState<Project | null>(null);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
-  // Initialize project data
   useEffect(() => {
     if (projectId) {
-      // Load project from localStorage
       const storedProjects = localStorage.getItem('projects');
       if (storedProjects) {
         const projects = JSON.parse(storedProjects);
@@ -60,7 +57,6 @@ const ProjectDetail = () => {
           console.log("Project found:", foundProject);
           setProject(foundProject);
           
-          // Load team members from localStorage
           const storedTeamMembers = localStorage.getItem(`team_${projectId}`);
           if (storedTeamMembers) {
             setTeamMembers(JSON.parse(storedTeamMembers));
@@ -68,7 +64,6 @@ const ProjectDetail = () => {
             setTeamMembers([]);
           }
 
-          // Load tasks from localStorage
           const storedTasks = localStorage.getItem(`tasks_${projectId}`);
           if (storedTasks) {
             const tasksObj = JSON.parse(storedTasks);
@@ -83,36 +78,29 @@ const ProjectDetail = () => {
     }
   }, [projectId]);
 
-  // Update tasks when changed in KanbanBoard using custom events
   useEffect(() => {
     const handleTasksUpdate = (event: CustomEvent) => {
       if (event.detail) {
         const { type, tasks: updatedTasks } = event.detail;
         
-        // Convert task object to array for components that need array format
         const taskArray = updatedTasks ? Object.values(updatedTasks) : [];
         setTasks(taskArray);
         
-        // Update events based on tasks
         updateEventsFromTasks(taskArray);
       }
     };
 
     const handleTaskDelete = (event: CustomEvent) => {
       if (event.detail && event.detail.taskId) {
-        // Get updated tasks from the event detail
         const { tasks: updatedTasks } = event.detail;
         
-        // Convert task object to array for components that need array format
         const taskArray = updatedTasks ? Object.values(updatedTasks) : [];
         setTasks(taskArray);
         
-        // Update events based on tasks
         updateEventsFromTasks(taskArray);
       }
     };
 
-    // Listen for task updates
     window.addEventListener('taskUpdate', handleTasksUpdate as EventListener);
     window.addEventListener('taskAdd', handleTasksUpdate as EventListener);
     window.addEventListener('taskDelete', handleTaskDelete as EventListener);
@@ -126,7 +114,6 @@ const ProjectDetail = () => {
     };
   }, [projectId]);
 
-  // Handle localStorage changes
   const handleStorageChange = () => {
     const storedTasks = localStorage.getItem(`tasks_${projectId}`);
     if (storedTasks) {
@@ -142,7 +129,6 @@ const ProjectDetail = () => {
     }
   };
 
-  // Update events based on tasks
   const updateEventsFromTasks = (tasksList: any[]) => {
     if (!tasksList || tasksList.length === 0) {
       setEvents([]);
@@ -159,7 +145,6 @@ const ProjectDetail = () => {
       assignedTo: task.assignee?.id
     }));
 
-    // Add some additional events
     const additionalEvents: CalendarEvent[] = [
       {
         id: 'event-meeting-1',
@@ -180,106 +165,95 @@ const ProjectDetail = () => {
     setEvents([...taskEvents, ...additionalEvents]);
   };
 
-  // Handle adding team members
   const handleAddTeamMember = (member: any) => {
     const updatedTeamMembers = [...teamMembers, member];
     setTeamMembers(updatedTeamMembers);
     localStorage.setItem(`team_${projectId}`, JSON.stringify(updatedTeamMembers));
   };
 
-  // Handle removing team members
   const handleRemoveTeamMember = (memberId: string) => {
     const updatedTeamMembers = teamMembers.filter(member => member.id !== memberId);
     setTeamMembers(updatedTeamMembers);
     localStorage.setItem(`team_${projectId}`, JSON.stringify(updatedTeamMembers));
   };
-  
-  // Handle adding calendar events
+
   const handleAddEvent = (event: CalendarEvent) => {
     const updatedEvents = [...events, event];
     setEvents(updatedEvents);
   };
 
-  // Handle deleting a task
   const handleDeleteTask = (taskId: string) => {
-    // Get current tasks from localStorage
+    console.log("ProjectDetail - Handling delete task:", taskId);
+    
     const storedTasks = localStorage.getItem(`tasks_${projectId}`);
     const storedColumns = localStorage.getItem(`columns_${projectId}`);
     
     if (storedTasks && storedColumns) {
-      // Update tasks
-      const tasksObj = JSON.parse(storedTasks);
-      delete tasksObj[taskId];
-      
-      // Update columns to remove the task ID
-      const columnsObj = JSON.parse(storedColumns);
-      Object.keys(columnsObj).forEach(columnId => {
-        const column = columnsObj[columnId];
-        column.taskIds = column.taskIds.filter((id: string) => id !== taskId);
-        columnsObj[columnId] = column;
-      });
-      
-      // Update localStorage
-      localStorage.setItem(`tasks_${projectId}`, JSON.stringify(tasksObj));
-      localStorage.setItem(`columns_${projectId}`, JSON.stringify(columnsObj));
-      
-      // Update state
-      const taskArray = Object.values(tasksObj);
-      setTasks(taskArray);
-      
-      // Update events
-      updateEventsFromTasks(taskArray);
-      
-      // Show success message
-      toast({
-        title: "Task deleted",
-        description: "The task has been successfully deleted."
-      });
-      
-      // Trigger custom event for other components
-      const updateEvent = new CustomEvent('taskDelete', {
-        detail: { taskId, tasks: tasksObj, columns: columnsObj }
-      });
-      window.dispatchEvent(updateEvent);
+      try {
+        const tasksObj = JSON.parse(storedTasks);
+        const columnsObj = JSON.parse(storedColumns);
+        
+        delete tasksObj[taskId];
+        
+        Object.keys(columnsObj).forEach(columnId => {
+          columnsObj[columnId].taskIds = columnsObj[columnId].taskIds.filter((id: string) => id !== taskId);
+        });
+        
+        localStorage.setItem(`tasks_${projectId}`, JSON.stringify(tasksObj));
+        localStorage.setItem(`columns_${projectId}`, JSON.stringify(columnsObj));
+        
+        const taskArray = Object.values(tasksObj);
+        setTasks(taskArray);
+        
+        updateEventsFromTasks(taskArray);
+        
+        toast({
+          title: "Task deleted",
+          description: "The task has been successfully deleted."
+        });
+        
+        const updateEvent = new CustomEvent('taskDelete', {
+          detail: { taskId, tasks: tasksObj, columns: columnsObj }
+        });
+        window.dispatchEvent(updateEvent);
+      } catch (error) {
+        console.error("Error deleting task:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete the task. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
-  // Handle deleting the project
   const handleDeleteProject = () => {
-    // Get all projects from localStorage
     const storedProjects = localStorage.getItem('projects');
     if (storedProjects) {
       const projects = JSON.parse(storedProjects);
       
-      // Filter out the current project
       const updatedProjects = projects.filter((p: Project) => p.id !== projectId);
       
-      // Update projects in localStorage
       localStorage.setItem('projects', JSON.stringify(updatedProjects));
       
-      // Remove project-specific data
       localStorage.removeItem(`tasks_${projectId}`);
       localStorage.removeItem(`columns_${projectId}`);
       localStorage.removeItem(`team_${projectId}`);
       
-      // Show success message
       toast({
         title: "Project deleted",
         description: "The project has been successfully deleted."
       });
       
-      // Navigate back to projects list
       navigate('/projects');
     }
   };
 
-  // If user is not logged in, redirect to login page
   if (!user) {
     navigate('/login');
     return null;
   }
 
-  // Show loading state while project is being fetched
   if (!project) {
     return (
       <div className="flex h-screen items-center justify-center">

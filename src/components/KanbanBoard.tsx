@@ -408,26 +408,28 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
   const handleDeleteTask = (taskId) => {
     if (!taskId) return;
     
-    console.log("Deleting task with ID:", taskId);
+    console.log("KanbanBoard - Deleting task with ID:", taskId);
     
-    // Get current tasks
+    // Create copies of the current state to modify
     const updatedTasks = { ...tasks };
+    const updatedColumns = { ...columns };
+    
+    // Remove the task from the tasks object
     delete updatedTasks[taskId];
     
-    // Update tasks state
-    setTasks(updatedTasks);
-    
-    // Update columns to remove the task ID from all columns
-    const updatedColumns = { ...columns };
+    // Remove the task ID from all columns
     Object.keys(updatedColumns).forEach(columnId => {
       updatedColumns[columnId].taskIds = updatedColumns[columnId].taskIds.filter(id => id !== taskId);
     });
-    setColumns(updatedColumns);
     
     // Clear selected task if it was the one that was deleted
     if (selectedTask && selectedTask.id === taskId) {
       setSelectedTask(null);
     }
+    
+    // Update state
+    setTasks(updatedTasks);
+    setColumns(updatedColumns);
     
     // Update localStorage
     localStorage.setItem(`tasks_${projectId}`, JSON.stringify(updatedTasks));
