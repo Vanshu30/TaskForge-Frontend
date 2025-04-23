@@ -293,6 +293,12 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
   const [teamMembers, setTeamMembers] = useState([]);
 
   useEffect(() => {
+    loadBoardData();
+  }, [projectId]);
+  
+  const loadBoardData = () => {
+    if (!projectId) return;
+    
     const storedTasks = localStorage.getItem(`tasks_${projectId}`);
     const storedColumns = localStorage.getItem(`columns_${projectId}`);
     const storedTeamMembers = localStorage.getItem(`team_${projectId}`);
@@ -313,6 +319,22 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
       localStorage.setItem(`tasks_${projectId}`, JSON.stringify({}));
       localStorage.setItem(`columns_${projectId}`, JSON.stringify(emptyColumns));
     }
+  };
+
+  useEffect(() => {
+    const handleTaskEvent = () => {
+      loadBoardData();
+    };
+    
+    window.addEventListener('taskUpdate', handleTaskEvent);
+    window.addEventListener('taskAdd', handleTaskEvent);
+    window.addEventListener('taskDelete', handleTaskEvent);
+    
+    return () => {
+      window.removeEventListener('taskUpdate', handleTaskEvent);
+      window.removeEventListener('taskAdd', handleTaskEvent);
+      window.removeEventListener('taskDelete', handleTaskEvent);
+    };
   }, [projectId]);
 
   const handleDragEnd = (result) => {
@@ -413,43 +435,19 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
     console.log("KanbanBoard - Deleting task with ID:", taskId);
     
     try {
-      const updatedTasks = { ...tasks };
-      const updatedColumns = { ...columns };
-      
-      delete updatedTasks[taskId];
-      
-      Object.keys(updatedColumns).forEach(columnId => {
-        updatedColumns[columnId].taskIds = updatedColumns[columnId].taskIds.filter(id => id !== taskId);
-      });
-      
       if (selectedTask && selectedTask.id === taskId) {
         setSelectedTask(null);
       }
       
-      setTasks(updatedTasks);
-      setColumns(updatedColumns);
-      
-      localStorage.setItem(`tasks_${projectId}`, JSON.stringify(updatedTasks));
-      localStorage.setItem(`columns_${projectId}`, JSON.stringify(updatedColumns));
-      
-      const deleteEvent = new CustomEvent('taskDelete', {
-        detail: { taskId, tasks: updatedTasks, columns: updatedColumns }
-      });
-      window.dispatchEvent(deleteEvent);
-      
-      toast({
-        title: "Task deleted",
-        description: "The task has been successfully removed."
-      });
-      
       if (onTaskDelete) {
+        console.log("KanbanBoard - Calling parent onTaskDelete function");
         onTaskDelete(taskId);
       }
       
-      console.log("KanbanBoard - Task deletion completed successfully");
+      console.log("KanbanBoard - Task deletion handled successfully");
       
     } catch (error) {
-      console.error("KanbanBoard - Error deleting task:", error);
+      console.error("KanbanBoard - Error handling task deletion:", error);
       toast({
         title: "Error deleting task",
         description: "An error occurred while trying to delete the task.",

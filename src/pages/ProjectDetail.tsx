@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -64,13 +65,7 @@ const ProjectDetail = () => {
             setTeamMembers([]);
           }
 
-          const storedTasks = localStorage.getItem(`tasks_${projectId}`);
-          if (storedTasks) {
-            const tasksObj = JSON.parse(storedTasks);
-            setTasks(Object.values(tasksObj));
-          } else {
-            setTasks([]);
-          }
+          loadTasks();
         } else {
           console.error("Project not found with ID:", projectId);
         }
@@ -78,27 +73,34 @@ const ProjectDetail = () => {
     }
   }, [projectId]);
 
+  // Separate function to load tasks to reuse
+  const loadTasks = () => {
+    if (!projectId) return;
+    
+    const storedTasks = localStorage.getItem(`tasks_${projectId}`);
+    if (storedTasks) {
+      const tasksObj = JSON.parse(storedTasks);
+      const taskArray = Object.values(tasksObj);
+      setTasks(taskArray);
+      updateEventsFromTasks(taskArray);
+    } else {
+      setTasks([]);
+      updateEventsFromTasks([]);
+    }
+  };
+
   useEffect(() => {
     const handleTasksUpdate = (event: CustomEvent) => {
       if (event.detail) {
-        const { type, tasks: updatedTasks } = event.detail;
-        
-        const taskArray = updatedTasks ? Object.values(updatedTasks) : [];
-        setTasks(taskArray);
-        
-        updateEventsFromTasks(taskArray);
+        console.log("ProjectDetail - Task update event received:", event.detail.type);
+        loadTasks();
       }
     };
 
     const handleTaskDelete = (event: CustomEvent) => {
       if (event.detail) {
         console.log("ProjectDetail - Task delete event received:", event.detail);
-        const { tasks: updatedTasks } = event.detail;
-        
-        const taskArray = updatedTasks ? Object.values(updatedTasks) : [];
-        setTasks(taskArray);
-        
-        updateEventsFromTasks(taskArray);
+        loadTasks();
       }
     };
 
@@ -116,14 +118,8 @@ const ProjectDetail = () => {
   }, [projectId]);
 
   const handleStorageChange = () => {
-    const storedTasks = localStorage.getItem(`tasks_${projectId}`);
-    if (storedTasks) {
-      const tasksObj = JSON.parse(storedTasks);
-      const taskArray = Object.values(tasksObj);
-      setTasks(taskArray);
-      updateEventsFromTasks(taskArray);
-    }
-
+    loadTasks();
+    
     const storedTeamMembers = localStorage.getItem(`team_${projectId}`);
     if (storedTeamMembers) {
       setTeamMembers(JSON.parse(storedTeamMembers));
@@ -186,8 +182,13 @@ const ProjectDetail = () => {
   const handleDeleteTask = (taskId: string) => {
     console.log("ProjectDetail - Handling delete task:", taskId);
     
-    if (!taskId) {
-      console.error("ProjectDetail - Cannot delete task: No taskId provided");
+    if (!taskId || !projectId) {
+      console.error("ProjectDetail - Cannot delete task: Invalid taskId or projectId");
+      toast({
+        title: "Error",
+        description: "Cannot delete task: Invalid data",
+        variant: "destructive",
+      });
       return;
     }
     
@@ -204,29 +205,34 @@ const ProjectDetail = () => {
           return;
         }
         
+        // Delete the task from the tasks object
         delete tasksObj[taskId];
         
+        // Remove the task ID from all columns
         Object.keys(columnsObj).forEach(columnId => {
           columnsObj[columnId].taskIds = columnsObj[columnId].taskIds.filter((id: string) => id !== taskId);
         });
         
+        // Save changes to localStorage
         localStorage.setItem(`tasks_${projectId}`, JSON.stringify(tasksObj));
         localStorage.setItem(`columns_${projectId}`, JSON.stringify(columnsObj));
         
+        // Update the tasks state
         const taskArray = Object.values(tasksObj);
         setTasks(taskArray);
         
+        // Update events
         updateEventsFromTasks(taskArray);
         
-        toast({
-          title: "Task deleted",
-          description: "The task has been successfully deleted."
-        });
-        
+        // Dispatch the taskDelete event
         const updateEvent = new CustomEvent('taskDelete', {
           detail: { taskId, tasks: tasksObj, columns: columnsObj }
         });
         window.dispatchEvent(updateEvent);
+        
+        console.log("ProjectDetail - Task deletion successful");
+      } else {
+        console.error("ProjectDetail - Cannot delete task: Storage data not found");
       }
     } catch (error) {
       console.error("ProjectDetail - Error deleting task:", error);
