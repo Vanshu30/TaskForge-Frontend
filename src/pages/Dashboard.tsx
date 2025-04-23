@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,12 +9,24 @@ import DashboardSidebar from '@/components/DashboardSidebar';
 import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu } from 'lucide-react';
+import ProjectsList from '@/components/ProjectsList';
+import ProjectCalendar from '@/components/ProjectCalendar';
+import { Calendar } from 'lucide-react';
+import { List } from 'lucide-react';
+import { Folder } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [activeTab, setActiveTab] = useState('tasks');
+
+  // Placeholder data - you'll want to replace these with actual data from your context or API
+  const [projects, setProjects] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([]);
 
   useEffect(() => {
     setSidebarOpen(!isMobile);
@@ -78,7 +91,48 @@ const Dashboard: React.FC = () => {
             </Card>
           </div>
           
-          {/* Tabs section removed as requested */}
+          <Tabs defaultValue="tasks" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="tasks" className="flex items-center gap-2">
+                <List size={16} />
+                My Tasks
+              </TabsTrigger>
+              <TabsTrigger value="projects" className="flex items-center gap-2">
+                <Folder size={16} />
+                Projects
+              </TabsTrigger>
+              <TabsTrigger value="calendar" className="flex items-center gap-2">
+                <Calendar size={16} />
+                Calendar
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="tasks">
+              {/* Placeholder for tasks view */}
+              <div className="text-center py-12 text-muted-foreground">
+                No tasks available
+              </div>
+            </TabsContent>
+            <TabsContent value="projects">
+              <ProjectsList 
+                projects={projects} 
+                onAddProject={(newProject) => {
+                  // Implement project addition logic
+                  setProjects([...projects, newProject]);
+                }} 
+              />
+            </TabsContent>
+            <TabsContent value="calendar">
+              <ProjectCalendar 
+                events={events}
+                teamMembers={teamMembers}
+                tasks={tasks}
+                onAddEvent={(newEvent) => {
+                  // Implement event addition logic
+                  setEvents([...events, newEvent]);
+                }}
+              />
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
     </div>
