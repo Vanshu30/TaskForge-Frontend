@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Dialog, 
   DialogContent, 
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
-import { Calendar, MessageSquare, Clock, Trash2 } from 'lucide-react';
+import { Calendar, MessageSquare, Clock, Trash2, Bug } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -43,9 +43,29 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
 }) => {
   const [comment, setComment] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [localComments, setLocalComments] = useState(task?.comments || []);
+
+  useEffect(() => {
+    // Update local comments when task.comments changes
+    if (task?.comments) {
+      setLocalComments(task.comments);
+    }
+  }, [task?.comments]);
 
   const handleAddComment = () => {
     if (comment.trim()) {
+      // Create a new comment for immediate display
+      const newComment = {
+        id: `comment-${Date.now()}`,
+        text: comment,
+        user: 'Current User',
+        timestamp: new Date().toISOString(),
+      };
+      
+      // Update local state immediately
+      setLocalComments([...localComments, newComment]);
+      
+      // Send to parent for persistence
       onAddComment(task.id, comment);
       setComment('');
     }
@@ -69,7 +89,20 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
         <DialogContent className="max-w-md">
           <DialogHeader>
             <div className="flex justify-between items-start">
-              <DialogTitle className="text-xl">{task.title}</DialogTitle>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <DialogTitle className="text-xl">{task.title}</DialogTitle>
+                  {task.type === 'bug' && (
+                    <Badge className="bg-red-500">
+                      <Bug className="h-4 w-4 mr-1" />
+                      Bug
+                    </Badge>
+                  )}
+                </div>
+                <Badge variant="outline" className="mt-1 w-fit">
+                  {task.id}
+                </Badge>
+              </div>
               <Badge className={
                 task.priority === 'high' ? 'bg-red-500' :
                 task.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
@@ -106,8 +139,8 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
               </h3>
               
               <div className="space-y-3 max-h-[200px] overflow-y-auto">
-                {task.comments && task.comments.length > 0 ? (
-                  task.comments.map(comment => (
+                {localComments && localComments.length > 0 ? (
+                  localComments.map(comment => (
                     <div key={comment.id} className="bg-muted p-3 rounded-md">
                       <div className="flex justify-between items-center">
                         <div className="font-medium text-sm">{comment.user}</div>

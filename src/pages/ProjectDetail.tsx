@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -73,13 +72,14 @@ const ProjectDetail = () => {
     }
   }, [projectId]);
 
-  // Update tasks when changed in KanbanBoard
+  // Update tasks when changed in KanbanBoard using custom events
   useEffect(() => {
-    const handleTasksChange = () => {
-      const storedTasks = localStorage.getItem(`tasks_${projectId}`);
-      if (storedTasks) {
-        const tasksObj = JSON.parse(storedTasks);
-        const taskArray = Object.values(tasksObj);
+    const handleTasksUpdate = (event: CustomEvent) => {
+      if (event.detail) {
+        const { type, tasks: updatedTasks } = event.detail;
+        
+        // Convert task object to array for components that need array format
+        const taskArray = updatedTasks ? Object.values(updatedTasks) : [];
         setTasks(taskArray);
         
         // Update events based on tasks
@@ -87,13 +87,49 @@ const ProjectDetail = () => {
       }
     };
 
-    // Listen for storage changes
-    window.addEventListener('storage', handleTasksChange);
+    const handleTaskDelete = (event: CustomEvent) => {
+      if (event.detail && event.detail.taskId) {
+        // Get updated tasks from the event detail
+        const { tasks: updatedTasks } = event.detail;
+        
+        // Convert task object to array for components that need array format
+        const taskArray = updatedTasks ? Object.values(updatedTasks) : [];
+        setTasks(taskArray);
+        
+        // Update events based on tasks
+        updateEventsFromTasks(taskArray);
+      }
+    };
+
+    // Listen for task updates
+    window.addEventListener('taskUpdate', handleTasksUpdate as EventListener);
+    window.addEventListener('taskAdd', handleTasksUpdate as EventListener);
+    window.addEventListener('taskDelete', handleTaskDelete as EventListener);
+    window.addEventListener('storage', handleStorageChange);
     
     return () => {
-      window.removeEventListener('storage', handleTasksChange);
+      window.removeEventListener('taskUpdate', handleTasksUpdate as EventListener);
+      window.removeEventListener('taskAdd', handleTasksUpdate as EventListener);
+      window.removeEventListener('taskDelete', handleTaskDelete as EventListener);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, [projectId]);
+
+  // Handle localStorage changes
+  const handleStorageChange = () => {
+    const storedTasks = localStorage.getItem(`tasks_${projectId}`);
+    if (storedTasks) {
+      const tasksObj = JSON.parse(storedTasks);
+      const taskArray = Object.values(tasksObj);
+      setTasks(taskArray);
+      updateEventsFromTasks(taskArray);
+    }
+
+    const storedTeamMembers = localStorage.getItem(`team_${projectId}`);
+    if (storedTeamMembers) {
+      setTeamMembers(JSON.parse(storedTeamMembers));
+    }
+  };
 
   // Update events based on tasks
   const updateEventsFromTasks = (tasksList: any[]) => {
@@ -188,6 +224,12 @@ const ProjectDetail = () => {
         title: "Task deleted",
         description: "The task has been successfully deleted."
       });
+      
+      // Trigger custom event for other components
+      const updateEvent = new CustomEvent('taskDelete', {
+        detail: { taskId, tasks: tasksObj, columns: columnsObj }
+      });
+      window.dispatchEvent(updateEvent);
     }
   };
 

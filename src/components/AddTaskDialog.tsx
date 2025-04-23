@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Calendar } from 'lucide-react';
+import { PlusCircle, Calendar, Bug } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
 import { 
@@ -35,7 +35,8 @@ const AddTaskDialog = ({ projectId, onAddTask, teamMembers = [] }: AddTaskDialog
       title: '',
       description: '',
       assignee: '',
-      priority: 'medium'
+      priority: 'medium',
+      type: 'task'
     },
   });
 
@@ -63,6 +64,7 @@ const AddTaskDialog = ({ projectId, onAddTask, teamMembers = [] }: AddTaskDialog
         title: data.title,
         description: data.description,
         priority: data.priority || 'medium',
+        type: data.type || 'task',
         dueDate: selectedDate ? selectedDate.toISOString().split('T')[0] : null,
         assignee: assigneeData,
         comments: [],
@@ -111,6 +113,23 @@ const AddTaskDialog = ({ projectId, onAddTask, teamMembers = [] }: AddTaskDialog
               id="description"
               {...form.register('description')}
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="type">Type</Label>
+            <Select onValueChange={(value) => form.setValue('type', value)} defaultValue="task">
+              <SelectTrigger>
+                <SelectValue placeholder="Select task type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="task">Task</SelectItem>
+                <SelectItem value="bug">
+                  <div className="flex items-center">
+                    <Bug className="h-4 w-4 mr-2 text-red-500" />
+                    Bug
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>Due Date</Label>

@@ -387,7 +387,10 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
     setTasks(updatedTasks);
     localStorage.setItem(`tasks_${projectId}`, JSON.stringify(updatedTasks));
     
-    window.dispatchEvent(new Event('storage'));
+    const updateEvent = new CustomEvent('taskUpdate', {
+      detail: { type: 'comment', taskId, tasks: updatedTasks }
+    });
+    window.dispatchEvent(updateEvent);
   };
 
   const handleAddTeamMember = (newMember) => {
@@ -395,26 +398,41 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
     setTeamMembers(updatedTeamMembers);
     localStorage.setItem(`team_${projectId}`, JSON.stringify(updatedTeamMembers));
     
-    window.dispatchEvent(new Event('storage'));
+    const updateEvent = new CustomEvent('taskUpdate', {
+      detail: { type: 'teamMember', teamMembers: updatedTeamMembers }
+    });
+    window.dispatchEvent(updateEvent);
   };
 
   const handleDeleteTask = (taskId) => {
+    if (!taskId) return;
+    
+    const updatedTasks = { ...tasks };
+    delete updatedTasks[taskId];
+    setTasks(updatedTasks);
+    
+    const updatedColumns = { ...columns };
+    Object.keys(updatedColumns).forEach(columnId => {
+      updatedColumns[columnId].taskIds = updatedColumns[columnId].taskIds.filter(id => id !== taskId);
+    });
+    setColumns(updatedColumns);
+    
+    if (selectedTask && selectedTask.id === taskId) {
+      setSelectedTask(null);
+    }
+    
+    const updateEvent = new CustomEvent('taskDelete', {
+      detail: { taskId, tasks: updatedTasks, columns: updatedColumns }
+    });
+    window.dispatchEvent(updateEvent);
+    
+    toast({
+      title: "Task deleted",
+      description: "The task has been successfully removed."
+    });
+    
     if (onTaskDelete) {
       onTaskDelete(taskId);
-      
-      const updatedTasks = { ...tasks };
-      delete updatedTasks[taskId];
-      setTasks(updatedTasks);
-      
-      const updatedColumns = { ...columns };
-      Object.keys(updatedColumns).forEach(columnId => {
-        updatedColumns[columnId].taskIds = updatedColumns[columnId].taskIds.filter(id => id !== taskId);
-      });
-      setColumns(updatedColumns);
-      
-      if (selectedTask && selectedTask.id === taskId) {
-        setSelectedTask(null);
-      }
     }
   };
 
@@ -445,7 +463,10 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
               localStorage.setItem(`tasks_${projectId}`, JSON.stringify(newTasks));
               localStorage.setItem(`columns_${projectId}`, JSON.stringify(newColumns));
               
-              window.dispatchEvent(new Event('storage'));
+              const updateEvent = new CustomEvent('taskAdd', {
+                detail: { task, tasks: newTasks, columns: newColumns }
+              });
+              window.dispatchEvent(updateEvent);
             }} 
           />
         </div>

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Calendar, MessageSquare } from 'lucide-react';
+import { Calendar, MessageSquare, Bug } from 'lucide-react';
 
 interface TaskCardProps {
   task: {
@@ -12,6 +12,7 @@ interface TaskCardProps {
     description: string;
     priority: string;
     dueDate: string;
+    type?: string;
     assignee: {
       name: string;
       avatar?: string;
@@ -29,9 +30,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
     >
       <CardHeader className="p-3 pb-0">
         <div className="flex justify-between items-start">
-          <Badge variant="outline" className="mb-1">
-            {task.id}
-          </Badge>
+          <div className="flex items-center gap-1">
+            <Badge variant="outline" className="mb-1">
+              {task.id}
+            </Badge>
+            {task.type === 'bug' && (
+              <Badge className="bg-red-500">
+                <Bug className="h-3 w-3 mr-1" />
+                Bug
+              </Badge>
+            )}
+          </div>
           <Badge className={
             task.priority === 'high' ? 'bg-red-500' :
             task.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
