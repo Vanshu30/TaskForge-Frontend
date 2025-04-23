@@ -432,27 +432,14 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
       return;
     }
     
-    console.log("KanbanBoard - Deleting task with ID:", taskId);
+    console.log("KanbanBoard - Delete task requested for ID:", taskId);
     
-    try {
-      if (selectedTask && selectedTask.id === taskId) {
-        setSelectedTask(null);
-      }
-      
-      if (onTaskDelete) {
-        console.log("KanbanBoard - Calling parent onTaskDelete function");
-        onTaskDelete(taskId);
-      }
-      
-      console.log("KanbanBoard - Task deletion handled successfully");
-      
-    } catch (error) {
-      console.error("KanbanBoard - Error handling task deletion:", error);
-      toast({
-        title: "Error deleting task",
-        description: "An error occurred while trying to delete the task.",
-        variant: "destructive",
-      });
+    if (selectedTask && selectedTask.id === taskId) {
+      setSelectedTask(null);
+    }
+    
+    if (onTaskDelete) {
+      onTaskDelete(taskId);
     }
   };
 

@@ -90,18 +90,12 @@ const ProjectDetail = () => {
   };
 
   useEffect(() => {
-    const handleTasksUpdate = (event: CustomEvent) => {
-      if (event.detail) {
-        console.log("ProjectDetail - Task update event received:", event.detail.type);
-        loadTasks();
-      }
+    const handleTasksUpdate = () => {
+      loadTasks();
     };
 
-    const handleTaskDelete = (event: CustomEvent) => {
-      if (event.detail) {
-        console.log("ProjectDetail - Task delete event received:", event.detail);
-        loadTasks();
-      }
+    const handleTaskDelete = () => {
+      loadTasks();
     };
 
     window.addEventListener('taskUpdate', handleTasksUpdate as EventListener);
@@ -193,47 +187,54 @@ const ProjectDetail = () => {
     }
     
     try {
+      // Get current tasks and columns from localStorage
       const storedTasks = localStorage.getItem(`tasks_${projectId}`);
       const storedColumns = localStorage.getItem(`columns_${projectId}`);
       
-      if (storedTasks && storedColumns) {
-        const tasksObj = JSON.parse(storedTasks);
-        const columnsObj = JSON.parse(storedColumns);
-        
-        if (!tasksObj[taskId]) {
-          console.error("ProjectDetail - Task not found in tasks object:", taskId);
-          return;
-        }
-        
-        // Delete the task from the tasks object
-        delete tasksObj[taskId];
-        
-        // Remove the task ID from all columns
-        Object.keys(columnsObj).forEach(columnId => {
-          columnsObj[columnId].taskIds = columnsObj[columnId].taskIds.filter((id: string) => id !== taskId);
-        });
-        
-        // Save changes to localStorage
-        localStorage.setItem(`tasks_${projectId}`, JSON.stringify(tasksObj));
-        localStorage.setItem(`columns_${projectId}`, JSON.stringify(columnsObj));
-        
-        // Update the tasks state
-        const taskArray = Object.values(tasksObj);
-        setTasks(taskArray);
-        
-        // Update events
-        updateEventsFromTasks(taskArray);
-        
-        // Dispatch the taskDelete event
-        const updateEvent = new CustomEvent('taskDelete', {
-          detail: { taskId, tasks: tasksObj, columns: columnsObj }
-        });
-        window.dispatchEvent(updateEvent);
-        
-        console.log("ProjectDetail - Task deletion successful");
-      } else {
+      if (!storedTasks || !storedColumns) {
         console.error("ProjectDetail - Cannot delete task: Storage data not found");
+        return;
       }
+      
+      const tasksObj = JSON.parse(storedTasks);
+      const columnsObj = JSON.parse(storedColumns);
+      
+      if (!tasksObj[taskId]) {
+        console.error("ProjectDetail - Task not found in tasks object:", taskId);
+        return;
+      }
+      
+      // Delete the task from the tasks object
+      delete tasksObj[taskId];
+      
+      // Remove the task ID from all columns
+      Object.keys(columnsObj).forEach(columnId => {
+        columnsObj[columnId].taskIds = columnsObj[columnId].taskIds.filter((id: string) => id !== taskId);
+      });
+      
+      // Save changes to localStorage
+      localStorage.setItem(`tasks_${projectId}`, JSON.stringify(tasksObj));
+      localStorage.setItem(`columns_${projectId}`, JSON.stringify(columnsObj));
+      
+      // Update the tasks state
+      const taskArray = Object.values(tasksObj);
+      setTasks(taskArray);
+      
+      // Update events
+      updateEventsFromTasks(taskArray);
+      
+      // Dispatch the taskDelete event
+      const updateEvent = new CustomEvent('taskDelete', {
+        detail: { taskId, tasks: tasksObj, columns: columnsObj }
+      });
+      window.dispatchEvent(updateEvent);
+      
+      console.log("ProjectDetail - Task deletion successful");
+      
+      toast({
+        title: "Task deleted",
+        description: "The task has been successfully removed."
+      });
     } catch (error) {
       console.error("ProjectDetail - Error deleting task:", error);
       toast({
