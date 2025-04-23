@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import {
   CheckCircle,
-  Calendar,
   LayoutDashboard,
   Mail,
   Settings,
@@ -159,12 +158,6 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               label={collapsed ? '' : 'Tasks'} 
               active={location.pathname === '/tasks'}
               onClick={() => handleNavigation('/tasks')}
-            />
-            <MenuItem 
-              icon={<Calendar size={20} />} 
-              label={collapsed ? '' : 'Calendar'} 
-              active={location.pathname === '/calendar'}
-              onClick={() => handleNavigation('/calendar')}
             />
             <MenuItem 
               icon={<Users size={20} />} 
