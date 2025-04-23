@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
@@ -9,11 +9,43 @@ import { useAuth } from '@/context/AuthContext';
 import { Menu, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// Define a Project type that matches the one in ProjectsList
+interface Project {
+  id: string;
+  name: string;
+  description: string;
+  status: 'active' | 'completed' | 'on-hold';
+  lastUpdated: string;
+  teamSize: number;
+  tags: string[];
+}
+
 const Projects = () => {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const { user } = useAuth();
   const navigate = useNavigate();
+  
+  // Add state for projects
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  // Effect to load projects from localStorage
+  useEffect(() => {
+    const storedProjects = localStorage.getItem('projects');
+    if (storedProjects) {
+      setProjects(JSON.parse(storedProjects));
+    }
+  }, []);
+
+  // Handle adding a new project
+  const handleAddProject = (project: Project) => {
+    const updatedProjects = [...projects, project];
+    setProjects(updatedProjects);
+    localStorage.setItem('projects', JSON.stringify(updatedProjects));
+    
+    // Navigate to the project detail page instead of adding it to the list
+    navigate(`/projects/${project.id}`);
+  };
 
   // If user is not logged in, redirect to login page
   if (!user) {
@@ -54,7 +86,10 @@ const Projects = () => {
             </Link>
           </div>
 
-          <ProjectsList />
+          <ProjectsList 
+            projects={projects}
+            onAddProject={handleAddProject}
+          />
         </main>
       </div>
     </div>
