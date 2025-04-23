@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -11,6 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Menu, Settings, Users, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from '@/hooks/use-toast';
 
 interface Project {
   id: string;
@@ -48,8 +50,22 @@ const ProjectDetail = () => {
           console.log("Project found:", foundProject);
           setProject(foundProject);
           
-          // Initialize team members (normally from database)
-          setTeamMembers([]);
+          // Load team members from localStorage
+          const storedTeamMembers = localStorage.getItem(`team_${projectId}`);
+          if (storedTeamMembers) {
+            setTeamMembers(JSON.parse(storedTeamMembers));
+          } else {
+            setTeamMembers([]);
+          }
+
+          // Load tasks from localStorage
+          const storedTasks = localStorage.getItem(`tasks_${projectId}`);
+          if (storedTasks) {
+            const tasksObj = JSON.parse(storedTasks);
+            setTasks(Object.values(tasksObj));
+          } else {
+            setTasks([]);
+          }
         } else {
           console.error("Project not found with ID:", projectId);
         }
@@ -57,70 +73,45 @@ const ProjectDetail = () => {
     }
   }, [projectId]);
 
-  // Get tasks from Kanban component
+  // Update tasks when changed in KanbanBoard
   useEffect(() => {
-    // This would normally come from a database query
-    const mockTasks = {
-      'task-1': {
-        id: 'task-1',
-        title: 'Research competitors',
-        description: 'Analyze top 5 competitors and identify opportunities',
-        priority: 'medium',
-        dueDate: '2025-04-30',
-        assignee: { id: 'user-1', name: 'Alex Johnson', avatar: null },
-        comments: []
-      },
-      'task-2': {
-        id: 'task-2',
-        title: 'Create wireframes',
-        description: 'Design wireframes for homepage and product pages',
-        priority: 'high',
-        dueDate: '2025-05-05',
-        assignee: { id: 'user-2', name: 'Maria Garcia', avatar: null },
-        comments: []
-      },
-      'task-3': {
-        id: 'task-3',
-        title: 'Define brand guidelines',
-        description: 'Update brand style guide with new colors and typography',
-        priority: 'low',
-        dueDate: '2025-05-10',
-        assignee: { id: 'user-3', name: 'David Kim', avatar: null },
-        comments: []
-      },
-      'task-4': {
-        id: 'task-4',
-        title: 'Customer interviews',
-        description: 'Conduct interviews with 10 key customers',
-        priority: 'high',
-        dueDate: '2025-04-25',
-        assignee: { id: 'user-4', name: 'Sarah Wilson', avatar: null },
-        comments: []
-      },
-      'task-5': {
-        id: 'task-5',
-        title: 'User journey mapping',
-        description: 'Create user journey maps for primary personas',
-        priority: 'medium',
-        dueDate: '2025-05-01',
-        assignee: { id: 'user-2', name: 'Maria Garcia', avatar: null },
-        comments: []
+    const handleTasksChange = () => {
+      const storedTasks = localStorage.getItem(`tasks_${projectId}`);
+      if (storedTasks) {
+        const tasksObj = JSON.parse(storedTasks);
+        const taskArray = Object.values(tasksObj);
+        setTasks(taskArray);
+        
+        // Update events based on tasks
+        updateEventsFromTasks(taskArray);
       }
     };
+
+    // Listen for storage changes
+    window.addEventListener('storage', handleTasksChange);
     
-    setTasks(Object.values(mockTasks));
-    
-    // Initialize calendar events based on task due dates
-    const taskEvents: CalendarEvent[] = Object.values(mockTasks).map(task => ({
+    return () => {
+      window.removeEventListener('storage', handleTasksChange);
+    };
+  }, [projectId]);
+
+  // Update events based on tasks
+  const updateEventsFromTasks = (tasksList: any[]) => {
+    if (!tasksList || tasksList.length === 0) {
+      setEvents([]);
+      return;
+    }
+
+    const taskEvents: CalendarEvent[] = tasksList.map(task => ({
       id: `event-${task.id}`,
       title: `Due: ${task.title}`,
       description: task.description,
       date: new Date(task.dueDate).toISOString(),
       type: 'deadline',
       relatedTaskId: task.id,
-      assignedTo: task.assignee.id
+      assignedTo: task.assignee?.id
     }));
-    
+
     // Add some additional events
     const additionalEvents: CalendarEvent[] = [
       {
@@ -140,22 +131,64 @@ const ProjectDetail = () => {
     ];
     
     setEvents([...taskEvents, ...additionalEvents]);
-    
-  }, []);
+  };
 
   // Handle adding team members
-  const handleAddTeamMember = (member) => {
-    setTeamMembers([...teamMembers, member]);
+  const handleAddTeamMember = (member: any) => {
+    const updatedTeamMembers = [...teamMembers, member];
+    setTeamMembers(updatedTeamMembers);
+    localStorage.setItem(`team_${projectId}`, JSON.stringify(updatedTeamMembers));
   };
 
   // Handle removing team members
   const handleRemoveTeamMember = (memberId: string) => {
-    setTeamMembers(teamMembers.filter(member => member.id !== memberId));
+    const updatedTeamMembers = teamMembers.filter(member => member.id !== memberId);
+    setTeamMembers(updatedTeamMembers);
+    localStorage.setItem(`team_${projectId}`, JSON.stringify(updatedTeamMembers));
   };
   
   // Handle adding calendar events
   const handleAddEvent = (event: CalendarEvent) => {
-    setEvents([...events, event]);
+    const updatedEvents = [...events, event];
+    setEvents(updatedEvents);
+  };
+
+  // Handle deleting a task
+  const handleDeleteTask = (taskId: string) => {
+    // Get current tasks from localStorage
+    const storedTasks = localStorage.getItem(`tasks_${projectId}`);
+    const storedColumns = localStorage.getItem(`columns_${projectId}`);
+    
+    if (storedTasks && storedColumns) {
+      // Update tasks
+      const tasksObj = JSON.parse(storedTasks);
+      delete tasksObj[taskId];
+      
+      // Update columns to remove the task ID
+      const columnsObj = JSON.parse(storedColumns);
+      Object.keys(columnsObj).forEach(columnId => {
+        const column = columnsObj[columnId];
+        column.taskIds = column.taskIds.filter((id: string) => id !== taskId);
+        columnsObj[columnId] = column;
+      });
+      
+      // Update localStorage
+      localStorage.setItem(`tasks_${projectId}`, JSON.stringify(tasksObj));
+      localStorage.setItem(`columns_${projectId}`, JSON.stringify(columnsObj));
+      
+      // Update state
+      const taskArray = Object.values(tasksObj);
+      setTasks(taskArray);
+      
+      // Update events
+      updateEventsFromTasks(taskArray);
+      
+      // Show success message
+      toast({
+        title: "Task deleted",
+        description: "The task has been successfully deleted."
+      });
+    }
   };
 
   // If user is not logged in, redirect to login page
@@ -232,7 +265,10 @@ const ProjectDetail = () => {
             </TabsList>
             
             <TabsContent value="board">
-              <KanbanBoard projectId={projectId} />
+              <KanbanBoard 
+                projectId={projectId} 
+                onTaskDelete={handleDeleteTask}
+              />
             </TabsContent>
             
             <TabsContent value="team">

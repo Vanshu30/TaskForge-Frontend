@@ -285,7 +285,7 @@ const TeamMembersDialog = ({ teamMembers, onAddMember }) => {
   );
 };
 
-const KanbanBoard = ({ projectId }) => {
+const KanbanBoard = ({ projectId, onTaskDelete }) => {
   const [isNewProject, setIsNewProject] = useState(true);
   const [columns, setColumns] = useState(emptyColumns);
   const [tasks, setTasks] = useState({});
@@ -295,6 +295,11 @@ const KanbanBoard = ({ projectId }) => {
   useEffect(() => {
     const storedTasks = localStorage.getItem(`tasks_${projectId}`);
     const storedColumns = localStorage.getItem(`columns_${projectId}`);
+    const storedTeamMembers = localStorage.getItem(`team_${projectId}`);
+    
+    if (storedTeamMembers) {
+      setTeamMembers(JSON.parse(storedTeamMembers));
+    }
     
     if (storedTasks && storedColumns) {
       setTasks(JSON.parse(storedTasks));
@@ -381,10 +386,36 @@ const KanbanBoard = ({ projectId }) => {
     
     setTasks(updatedTasks);
     localStorage.setItem(`tasks_${projectId}`, JSON.stringify(updatedTasks));
+    
+    window.dispatchEvent(new Event('storage'));
   };
 
   const handleAddTeamMember = (newMember) => {
-    setTeamMembers([...teamMembers, newMember]);
+    const updatedTeamMembers = [...teamMembers, newMember];
+    setTeamMembers(updatedTeamMembers);
+    localStorage.setItem(`team_${projectId}`, JSON.stringify(updatedTeamMembers));
+    
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const handleDeleteTask = (taskId) => {
+    if (onTaskDelete) {
+      onTaskDelete(taskId);
+      
+      const updatedTasks = { ...tasks };
+      delete updatedTasks[taskId];
+      setTasks(updatedTasks);
+      
+      const updatedColumns = { ...columns };
+      Object.keys(updatedColumns).forEach(columnId => {
+        updatedColumns[columnId].taskIds = updatedColumns[columnId].taskIds.filter(id => id !== taskId);
+      });
+      setColumns(updatedColumns);
+      
+      if (selectedTask && selectedTask.id === taskId) {
+        setSelectedTask(null);
+      }
+    }
   };
 
   return (
@@ -413,6 +444,8 @@ const KanbanBoard = ({ projectId }) => {
               
               localStorage.setItem(`tasks_${projectId}`, JSON.stringify(newTasks));
               localStorage.setItem(`columns_${projectId}`, JSON.stringify(newColumns));
+              
+              window.dispatchEvent(new Event('storage'));
             }} 
           />
         </div>
@@ -485,6 +518,7 @@ const KanbanBoard = ({ projectId }) => {
           isOpen={!!selectedTask}
           onClose={() => setSelectedTask(null)}
           onAddComment={handleAddComment}
+          onDeleteTask={handleDeleteTask}
           teamMembers={teamMembers}
         />
       )}

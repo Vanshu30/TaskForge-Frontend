@@ -24,7 +24,7 @@ interface TaskCardProps {
 const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
   return (
     <Card 
-      className="mb-3 cursor-pointer hover:shadow-md transition-shadow bg-white"
+      className="mb-3 cursor-pointer hover:shadow-md transition-shadow bg-white hover:border-primary"
       onClick={onClick}
     >
       <CardHeader className="p-3 pb-0">
@@ -60,6 +60,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
             {task.comments.length}
           </div>
         </div>
+        <div className="text-xs text-primary">Click for details</div>
       </CardFooter>
     </Card>
   );
