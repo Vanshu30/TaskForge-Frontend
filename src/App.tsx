@@ -16,6 +16,9 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Issues from "./pages/Issues";
 import Settings from "./pages/Settings";
+import Calendar from "./pages/Calendar";
+import Tasks from "./pages/Tasks";
+import Teams from "./pages/Teams";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +67,9 @@ const App = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/issues" element={<Issues />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/calendar" element={<Calendar />} />
+              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/teams" element={<Teams />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

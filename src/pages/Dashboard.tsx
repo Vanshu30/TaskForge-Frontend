@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -16,12 +15,10 @@ const Dashboard: React.FC = () => {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
-  // Close sidebar on mobile by default
   useEffect(() => {
     setSidebarOpen(!isMobile);
   }, [isMobile]);
 
-  // If no user is logged in, redirect to login
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -29,7 +26,7 @@ const Dashboard: React.FC = () => {
   }, [user, navigate]);
 
   if (!user) {
-    return null; // Don't render anything while redirecting
+    return null;
   }
 
   const toggleSidebar = () => {
@@ -48,7 +45,6 @@ const Dashboard: React.FC = () => {
         />
         
         <main className={`flex-1 p-4 md:p-6 ${isMobile ? 'w-full' : ''}`}>
-          {/* Mobile sidebar toggle */}
           {isMobile && !sidebarOpen && (
             <Button 
               variant="outline" 
@@ -103,9 +99,9 @@ const Dashboard: React.FC = () => {
           
           <Tabs defaultValue="tasks">
             <TabsList>
-              <TabsTrigger value="tasks">My Tasks</TabsTrigger>
-              <TabsTrigger value="projects">Projects</TabsTrigger>
-              <TabsTrigger value="calendar">Calendar</TabsTrigger>
+              <TabsTrigger value="tasks" onClick={() => navigate('/tasks')}>My Tasks</TabsTrigger>
+              <TabsTrigger value="projects" onClick={() => navigate('/projects')}>Projects</TabsTrigger>
+              <TabsTrigger value="calendar" onClick={() => navigate('/calendar')}>Calendar</TabsTrigger>
             </TabsList>
             
             <TabsContent value="tasks" className="mt-6">
@@ -175,7 +171,6 @@ const Dashboard: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {/* Project 1 */}
                     <div className="border rounded-md p-4">
                       <div className="flex justify-between items-start">
                         <div>
@@ -196,7 +191,6 @@ const Dashboard: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Project 2 */}
                     <div className="border rounded-md p-4">
                       <div className="flex justify-between items-start">
                         <div>

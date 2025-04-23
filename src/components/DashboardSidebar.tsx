@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -61,7 +60,6 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     setCollapsed(!collapsed);
   };
 
-  // Handle routing
   const handleNavigation = (path: string) => {
     navigate(path);
     if (isMobile) {
@@ -75,7 +73,6 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
   return (
     <>
-      {/* Mobile overlay */}
       {isMobile && isOpen && (
         <div 
           className="fixed inset-0 bg-black/30 z-30" 
@@ -84,7 +81,6 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         />
       )}
 
-      {/* Sidebar */}
       <div
         className={`${
           isMobile
@@ -94,7 +90,6 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           collapsed && !isMobile ? 'w-16' : 'w-64'
         } bg-white transition-all duration-300 flex flex-col`}
       >
-        {/* Header */}
         <div className="p-4 border-b flex items-center justify-between">
           {!collapsed && (
             <div className="flex items-center space-x-2">
@@ -139,21 +134,11 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           )}
         </div>
 
-        {/* Organization */}
-        {!collapsed ? (
-          <div className="p-4 border-b">
-            <div className="text-sm font-medium text-muted-foreground">ORGANIZATION</div>
-            <div className="mt-1 font-semibold truncate">{user?.organizationName}</div>
-          </div>
-        ) : (
-          <div className="p-4 border-b flex justify-center">
-            <div className="w-8 h-8 rounded-md bg-gray-200 flex items-center justify-center text-gray-500">
-              {user?.organizationName.charAt(0)}
-            </div>
-          </div>
-        )}
+        <div className="p-4 border-b">
+          <div className="text-sm font-medium text-muted-foreground">ORGANIZATION</div>
+          <div className="mt-1 font-semibold truncate">{user?.organizationName}</div>
+        </div>
 
-        {/* Navigation */}
         <div className="flex-1 overflow-y-auto p-2">
           <nav className="space-y-1">
             <MenuItem 
@@ -170,26 +155,25 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             />
             <MenuItem 
               icon={<ListOrdered size={20} />} 
-              label={collapsed ? '' : 'Issues'} 
-              active={location.pathname === '/issues'}
-              onClick={() => handleNavigation('/issues')}
+              label={collapsed ? '' : 'Tasks'} 
+              active={location.pathname === '/tasks'}
+              onClick={() => handleNavigation('/tasks')}
             />
             <MenuItem 
               icon={<Calendar size={20} />} 
               label={collapsed ? '' : 'Calendar'} 
+              active={location.pathname === '/calendar'}
+              onClick={() => handleNavigation('/calendar')}
             />
             <MenuItem 
               icon={<Users size={20} />} 
-              label={collapsed ? '' : 'Team'} 
-            />
-            <MenuItem 
-              icon={<Mail size={20} />} 
-              label={collapsed ? '' : 'Messages'} 
+              label={collapsed ? '' : 'Teams'} 
+              active={location.pathname === '/teams'}
+              onClick={() => handleNavigation('/teams')}
             />
           </nav>
         </div>
 
-        {/* Footer */}
         <div className="p-4 border-t">
           <MenuItem 
             icon={<Settings size={20} />} 
