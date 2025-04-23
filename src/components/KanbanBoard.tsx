@@ -408,6 +408,8 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
   const handleDeleteTask = (taskId) => {
     if (!taskId) return;
     
+    console.log("Deleting task with ID:", taskId);
+    
     // Get current tasks
     const updatedTasks = { ...tasks };
     delete updatedTasks[taskId];

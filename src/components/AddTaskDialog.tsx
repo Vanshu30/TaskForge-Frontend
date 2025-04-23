@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Calendar, Bug } from 'lucide-react';
+import { PlusCircle, Calendar, Bug, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
 import { 
@@ -121,11 +121,28 @@ const AddTaskDialog = ({ projectId, onAddTask, teamMembers = [] }: AddTaskDialog
                 <SelectValue placeholder="Select task type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="task">Task</SelectItem>
+                <SelectItem value="task">
+                  <div className="flex items-center">
+                    <Clock className="h-4 w-4 mr-2 text-amber-500" />
+                    Task
+                  </div>
+                </SelectItem>
                 <SelectItem value="bug">
                   <div className="flex items-center">
                     <Bug className="h-4 w-4 mr-2 text-red-500" />
                     Bug
+                  </div>
+                </SelectItem>
+                <SelectItem value="feature">
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                    Feature
+                  </div>
+                </SelectItem>
+                <SelectItem value="enhancement">
+                  <div className="flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-2 text-blue-500" />
+                    Enhancement
                   </div>
                 </SelectItem>
               </SelectContent>

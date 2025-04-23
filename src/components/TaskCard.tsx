@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Calendar, MessageSquare, Bug } from 'lucide-react';
+import { Calendar, MessageSquare, Bug, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 
 interface TaskCardProps {
   task: {
@@ -23,6 +23,34 @@ interface TaskCardProps {
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
+  const getTaskTypeIcon = () => {
+    switch (task.type) {
+      case 'bug':
+        return <Bug className="h-3 w-3 mr-1" />;
+      case 'feature':
+        return <CheckCircle className="h-3 w-3 mr-1" />;
+      case 'enhancement':
+        return <AlertCircle className="h-3 w-3 mr-1" />;
+      case 'task':
+      default:
+        return <Clock className="h-3 w-3 mr-1" />;
+    }
+  };
+
+  const getTaskTypeBadgeColor = () => {
+    switch (task.type) {
+      case 'bug':
+        return 'bg-red-500';
+      case 'feature':
+        return 'bg-green-500';
+      case 'enhancement':
+        return 'bg-blue-500';
+      case 'task':
+      default:
+        return 'bg-amber-500';
+    }
+  };
+
   return (
     <Card 
       className="mb-3 cursor-pointer hover:shadow-md transition-shadow bg-white hover:border-primary"
@@ -34,10 +62,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
             <Badge variant="outline" className="mb-1">
               {task.id}
             </Badge>
-            {task.type === 'bug' && (
-              <Badge className="bg-red-500">
-                <Bug className="h-3 w-3 mr-1" />
-                Bug
+            {task.type && (
+              <Badge className={getTaskTypeBadgeColor()}>
+                {getTaskTypeIcon()}
+                {task.type.charAt(0).toUpperCase() + task.type.slice(1)}
               </Badge>
             )}
           </div>
@@ -48,7 +76,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
             {task.priority}
           </Badge>
         </div>
-        <h3 className="text-sm font-medium">{task.title}</h3>
+        <h3 className="text-sm font-medium mt-1">{task.title}</h3>
         <p className="text-xs text-muted-foreground line-clamp-2">{task.description}</p>
       </CardHeader>
       <CardContent className="p-3 pt-0">

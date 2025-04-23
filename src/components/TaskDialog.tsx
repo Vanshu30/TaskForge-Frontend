@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
-import { Calendar, MessageSquare, Trash2, Bug } from 'lucide-react';
+import { Calendar, MessageSquare, Trash2, Bug, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -87,6 +87,34 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
 
   if (!task) return null;
 
+  const getTaskTypeIcon = () => {
+    switch (task.type) {
+      case 'bug':
+        return <Bug className="h-4 w-4 mr-1" />;
+      case 'feature':
+        return <CheckCircle className="h-4 w-4 mr-1" />;
+      case 'enhancement':
+        return <AlertCircle className="h-4 w-4 mr-1" />;
+      case 'task':
+      default:
+        return <Clock className="h-4 w-4 mr-1" />;
+    }
+  };
+
+  const getTaskTypeBadgeColor = () => {
+    switch (task.type) {
+      case 'bug':
+        return 'bg-red-500';
+      case 'feature':
+        return 'bg-green-500';
+      case 'enhancement':
+        return 'bg-blue-500';
+      case 'task':
+      default:
+        return 'bg-amber-500';
+    }
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -96,10 +124,10 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <DialogTitle className="text-xl">{task.title}</DialogTitle>
-                  {task.type === 'bug' && (
-                    <Badge className="bg-red-500">
-                      <Bug className="h-4 w-4 mr-1" />
-                      Bug
+                  {task.type && (
+                    <Badge className={getTaskTypeBadgeColor()}>
+                      {getTaskTypeIcon()}
+                      {task.type.charAt(0).toUpperCase() + task.type.slice(1)}
                     </Badge>
                   )}
                 </div>

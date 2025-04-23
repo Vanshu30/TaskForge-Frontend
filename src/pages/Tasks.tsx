@@ -5,7 +5,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import { useAuth } from '@/context/AuthContext';
-import { Menu, ArrowLeft, Calendar, Filter } from 'lucide-react';
+import { Menu, ArrowLeft, Calendar, Filter, Bug, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import TaskCard from '@/components/TaskCard';
@@ -50,6 +50,7 @@ const Tasks = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>('all');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<string>('all');
 
   // Load all tasks from all projects
   useEffect(() => {
@@ -129,12 +130,12 @@ const Tasks = () => {
       allProjectTasks.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
       
       setAllTasks(allProjectTasks);
-      applyFilters(allProjectTasks, selectedProject, selectedPriority);
+      applyFilters(allProjectTasks, selectedProject, selectedPriority, selectedType);
     }
   };
   
   // Apply filters
-  const applyFilters = (tasks: Task[], project: string, priority: string) => {
+  const applyFilters = (tasks: Task[], project: string, priority: string, type: string) => {
     let result = tasks;
     
     if (project !== 'all') {
@@ -145,19 +146,43 @@ const Tasks = () => {
       result = result.filter(task => task.priority === priority);
     }
     
+    if (type !== 'all') {
+      result = result.filter(task => task.type === type);
+    }
+    
     setFilteredTasks(result);
   };
   
   // Handle project filter change
   const handleProjectFilter = (value: string) => {
     setSelectedProject(value);
-    applyFilters(allTasks, value, selectedPriority);
+    applyFilters(allTasks, value, selectedPriority, selectedType);
   };
   
   // Handle priority filter change
   const handlePriorityFilter = (value: string) => {
     setSelectedPriority(value);
-    applyFilters(allTasks, selectedProject, value);
+    applyFilters(allTasks, selectedProject, value, selectedType);
+  };
+  
+  // Handle type filter change
+  const handleTypeFilter = (value: string) => {
+    setSelectedType(value);
+    applyFilters(allTasks, selectedProject, selectedPriority, value);
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'bug':
+        return <Bug className="h-4 w-4 mr-1 text-red-500" />;
+      case 'feature':
+        return <CheckCircle className="h-4 w-4 mr-1 text-green-500" />;
+      case 'enhancement':
+        return <AlertCircle className="h-4 w-4 mr-1 text-blue-500" />;
+      case 'task':
+      default:
+        return <Clock className="h-4 w-4 mr-1 text-amber-500" />;
+    }
   };
 
   if (!user) {
@@ -198,15 +223,19 @@ const Tasks = () => {
             </Link>
           </div>
 
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">My Tasks</h1>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center">
-                <Filter className="h-4 w-4 mr-2" />
-                <span className="text-sm mr-2">Filters:</span>
-              </div>
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold mb-2">My Tasks</h1>
+            <p className="text-muted-foreground">Manage and track all your tasks across different projects</p>
+          </div>
+
+          <div className="bg-muted/30 p-4 rounded-lg mb-8 border">
+            <h2 className="text-sm font-medium mb-3 flex items-center">
+              <Filter className="h-4 w-4 mr-2" />
+              Filter Tasks
+            </h2>
+            <div className="flex flex-wrap gap-3">
               <Select value={selectedProject} onValueChange={handleProjectFilter}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full md:w-[180px]">
                   <SelectValue placeholder="Filter by project" />
                 </SelectTrigger>
                 <SelectContent>
@@ -218,18 +247,74 @@ const Tasks = () => {
                   ))}
                 </SelectContent>
               </Select>
+              
+              <Select value={selectedType} onValueChange={handleTypeFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter by type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="task">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-2 text-amber-500" />
+                      Task
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="bug">
+                    <div className="flex items-center">
+                      <Bug className="h-4 w-4 mr-2 text-red-500" />
+                      Bug
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="feature">
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      Feature
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="enhancement">
+                    <div className="flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-2 text-blue-500" />
+                      Enhancement
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              
               <Select value={selectedPriority} onValueChange={handlePriorityFilter}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full md:w-[180px]">
                   <SelectValue placeholder="Filter by priority" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="low">
+                    <div className="flex items-center">
+                      <span className="h-3 w-3 rounded-full bg-green-500 mr-2"></span>
+                      Low
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="medium">
+                    <div className="flex items-center">
+                      <span className="h-3 w-3 rounded-full bg-yellow-500 mr-2"></span>
+                      Medium
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="high">
+                    <div className="flex items-center">
+                      <span className="h-3 w-3 rounded-full bg-red-500 mr-2"></span>
+                      High
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="mb-4">
+            <h2 className="text-lg font-medium">
+              Results 
+              <Badge variant="outline" className="ml-2">{filteredTasks.length} tasks</Badge>
+            </h2>
           </div>
 
           {filteredTasks.length > 0 ? (
@@ -237,7 +322,7 @@ const Tasks = () => {
               {filteredTasks.map(task => (
                 <div key={task.id} className="relative">
                   <Badge 
-                    className="absolute -top-2 -right-2 z-10"
+                    className="absolute -top-2 -right-2 z-10 bg-primary/10 text-primary border-primary/20"
                     variant="outline"
                   >
                     {task.projectName}
