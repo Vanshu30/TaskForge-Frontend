@@ -14,7 +14,6 @@ import {
   ChevronRight,
   Briefcase,
   ListOrdered,
-  AlertCircle,
 } from 'lucide-react';
 
 interface MenuItemProps {
@@ -165,12 +164,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               active={location.pathname === '/teams'}
               onClick={() => handleNavigation('/teams')}
             />
-            <MenuItem 
-              icon={<AlertCircle size={20} />} 
-              label={collapsed ? '' : 'Issues'} 
-              active={location.pathname === '/issues'}
-              onClick={() => handleNavigation('/issues')}
-            />
+            
           </nav>
         </div>
 

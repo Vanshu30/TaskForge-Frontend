@@ -10,8 +10,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu } from 'lucide-react';
 import ProjectsList from '@/components/ProjectsList';
-import ProjectCalendar from '@/components/ProjectCalendar';
-import { Calendar } from 'lucide-react';
+
+
 import { List } from 'lucide-react';
 import { Folder } from 'lucide-react';
 
@@ -24,7 +24,6 @@ const Dashboard: React.FC = () => {
 
   // Placeholder data - you'll want to replace these with actual data from your context or API
   const [projects, setProjects] = useState([]);
-  const [events, setEvents] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
 
@@ -101,10 +100,6 @@ const Dashboard: React.FC = () => {
                 <Folder size={16} />
                 Projects
               </TabsTrigger>
-              <TabsTrigger value="calendar" className="flex items-center gap-2">
-                <Calendar size={16} />
-                Calendar
-              </TabsTrigger>
             </TabsList>
             <TabsContent value="tasks">
               {/* Placeholder for tasks view */}
@@ -119,17 +114,6 @@ const Dashboard: React.FC = () => {
                   // Implement project addition logic
                   setProjects([...projects, newProject]);
                 }} 
-              />
-            </TabsContent>
-            <TabsContent value="calendar">
-              <ProjectCalendar 
-                events={events}
-                teamMembers={teamMembers}
-                tasks={tasks}
-                onAddEvent={(newEvent) => {
-                  // Implement event addition logic
-                  setEvents([...events, newEvent]);
-                }}
               />
             </TabsContent>
           </Tabs>
