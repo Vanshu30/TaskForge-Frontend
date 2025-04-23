@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Button } from '@/components/ui/button';
@@ -398,8 +399,8 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
     setTeamMembers(updatedTeamMembers);
     localStorage.setItem(`team_${projectId}`, JSON.stringify(updatedTeamMembers));
     
-    const updateEvent = new CustomEvent('taskUpdate', {
-      detail: { type: 'teamMember', teamMembers: updatedTeamMembers }
+    const updateEvent = new CustomEvent('teamUpdate', {
+      detail: { type: 'teamMember', projectId, teamMembers: updatedTeamMembers }
     });
     window.dispatchEvent(updateEvent);
   };
@@ -407,30 +408,41 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
   const handleDeleteTask = (taskId) => {
     if (!taskId) return;
     
+    // Get current tasks
     const updatedTasks = { ...tasks };
     delete updatedTasks[taskId];
+    
+    // Update tasks state
     setTasks(updatedTasks);
     
+    // Update columns to remove the task ID from all columns
     const updatedColumns = { ...columns };
     Object.keys(updatedColumns).forEach(columnId => {
       updatedColumns[columnId].taskIds = updatedColumns[columnId].taskIds.filter(id => id !== taskId);
     });
     setColumns(updatedColumns);
     
+    // Clear selected task if it was the one that was deleted
     if (selectedTask && selectedTask.id === taskId) {
       setSelectedTask(null);
     }
     
-    const updateEvent = new CustomEvent('taskDelete', {
+    // Update localStorage
+    localStorage.setItem(`tasks_${projectId}`, JSON.stringify(updatedTasks));
+    localStorage.setItem(`columns_${projectId}`, JSON.stringify(updatedColumns));
+    
+    // Dispatch event for other components
+    const deleteEvent = new CustomEvent('taskDelete', {
       detail: { taskId, tasks: updatedTasks, columns: updatedColumns }
     });
-    window.dispatchEvent(updateEvent);
+    window.dispatchEvent(deleteEvent);
     
     toast({
       title: "Task deleted",
       description: "The task has been successfully removed."
     });
     
+    // Call parent handler if provided
     if (onTaskDelete) {
       onTaskDelete(taskId);
     }

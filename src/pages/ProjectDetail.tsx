@@ -8,10 +8,20 @@ import TeamTab from '@/components/TeamTab';
 import ProjectCalendar, { CalendarEvent } from '@/components/ProjectCalendar';
 import ProjectTimeline from '@/components/ProjectTimeline';
 import { useAuth } from '@/context/AuthContext';
-import { Menu, Settings, Users, ArrowLeft } from 'lucide-react';
+import { Menu, Settings, ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Project {
   id: string;
@@ -35,6 +45,7 @@ const ProjectDetail = () => {
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // Initialize project data
   useEffect(() => {
@@ -233,6 +244,35 @@ const ProjectDetail = () => {
     }
   };
 
+  // Handle deleting the project
+  const handleDeleteProject = () => {
+    // Get all projects from localStorage
+    const storedProjects = localStorage.getItem('projects');
+    if (storedProjects) {
+      const projects = JSON.parse(storedProjects);
+      
+      // Filter out the current project
+      const updatedProjects = projects.filter((p: Project) => p.id !== projectId);
+      
+      // Update projects in localStorage
+      localStorage.setItem('projects', JSON.stringify(updatedProjects));
+      
+      // Remove project-specific data
+      localStorage.removeItem(`tasks_${projectId}`);
+      localStorage.removeItem(`columns_${projectId}`);
+      localStorage.removeItem(`team_${projectId}`);
+      
+      // Show success message
+      toast({
+        title: "Project deleted",
+        description: "The project has been successfully deleted."
+      });
+      
+      // Navigate back to projects list
+      navigate('/projects');
+    }
+  };
+
   // If user is not logged in, redirect to login page
   if (!user) {
     navigate('/login');
@@ -288,6 +328,10 @@ const ProjectDetail = () => {
                 <p className="text-muted-foreground">{project.description}</p>
               </div>
               <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowDeleteConfirm(true)}>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Project
+                </Button>
                 <Link to={`/projects/${projectId}/settings`}>
                   <Button variant="outline">
                     <Settings className="h-4 w-4 mr-2" />
@@ -337,6 +381,24 @@ const ProjectDetail = () => {
           </Tabs>
         </main>
       </div>
+      
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this project? This action cannot be undone
+              and will remove all tasks, team members, and data associated with this project.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteProject} className="bg-red-500">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

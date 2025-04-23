@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
-import { Calendar, MessageSquare, Clock, Trash2, Bug } from 'lucide-react';
+import { Calendar, MessageSquare, Trash2, Bug } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -79,9 +79,13 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
 
   const handleDelete = () => {
     setShowDeleteConfirm(false);
-    onDeleteTask(task.id);
+    if (onDeleteTask) {
+      onDeleteTask(task.id);
+    }
     onClose();
   };
+
+  if (!task) return null;
 
   return (
     <>
