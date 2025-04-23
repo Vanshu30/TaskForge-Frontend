@@ -1,12 +1,23 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AuthForm, { LoginFormValues } from '@/components/AuthForm';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Login: React.FC = () => {
   const { user, login, loading, error } = useAuth();
   const [loginError, setLoginError] = useState<string | null>(null);
+  const { toast } = useToast();
+  
+  // Check if users exist in localStorage on component mount
+  useEffect(() => {
+    const storedUsers = localStorage.getItem('users');
+    const users = storedUsers ? JSON.parse(storedUsers) : [];
+    if (users.length === 0) {
+      setLoginError("No accounts found. Please sign up first.");
+    }
+  }, []);
 
   // If user is already logged in, redirect to dashboard
   if (user) {
@@ -20,6 +31,13 @@ const Login: React.FC = () => {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed. Please try again.';
       setLoginError(message);
+      
+      // Show toast with error message
+      toast({
+        variant: 'destructive',
+        title: 'Login failed',
+        description: message,
+      });
     }
   };
 
