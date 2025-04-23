@@ -17,6 +17,7 @@ const Login: React.FC = () => {
     
     const users = storedUsers ? JSON.parse(storedUsers) : [];
     if (users.length === 0) {
+      // Only show this message if there are truly no accounts in the system
       setLoginError("No accounts found. Please sign up first.");
     } else {
       setLoginError(null); // Clear error if users exist

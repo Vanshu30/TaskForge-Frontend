@@ -93,14 +93,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Logging in with:', email, password);
       console.log('Available users:', users);
       
-      // Fix: Use case-insensitive email comparison and exact password match
-      const foundUser = users.find(
-        (u: any) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+      // Use case-insensitive email comparison first to check if user exists
+      const userWithEmail = users.find(
+        (u: any) => u.email.toLowerCase() === email.toLowerCase()
       );
       
-      if (!foundUser) {
-        throw new Error('Invalid email or password');
+      if (!userWithEmail) {
+        throw new Error('User not found. Please check your email or sign up.');
       }
+      
+      // Then check if password matches
+      if (userWithEmail.password !== password) {
+        throw new Error('Incorrect password. Please try again.');
+      }
+      
+      const foundUser = userWithEmail; // User exists and password matches
       
       // Remove password before storing user in state
       const { password: _, ...userWithoutPassword } = foundUser;

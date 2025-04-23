@@ -63,7 +63,10 @@ const Dashboard: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <Card>
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-shadow" 
+              onClick={() => navigate('/tasks')}
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">My Tasks</CardTitle>
                 <CardDescription>Your assigned tasks</CardDescription>
@@ -74,7 +77,10 @@ const Dashboard: React.FC = () => {
               </CardContent>
             </Card>
             
-            <Card>
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => navigate('/projects')}
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">Active Projects</CardTitle>
                 <CardDescription>Ongoing projects</CardDescription>
@@ -85,7 +91,10 @@ const Dashboard: React.FC = () => {
               </CardContent>
             </Card>
             
-            <Card>
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => navigate('/teams')}
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">Team Members</CardTitle>
                 <CardDescription>Active collaborators</CardDescription>
@@ -124,7 +133,10 @@ const Dashboard: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y">
-                        <tr className="hover:bg-muted/50">
+                        <tr 
+                          className="hover:bg-muted/50 cursor-pointer" 
+                          onClick={() => navigate('/tasks')}
+                        >
                           <td className="py-3 px-4">Design new dashboard layout</td>
                           <td className="py-3 px-4">
                             <span className="px-2 py-1 rounded-full text-xs bg-amber-100 text-amber-800">In Progress</span>
@@ -134,7 +146,10 @@ const Dashboard: React.FC = () => {
                             <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">High</span>
                           </td>
                         </tr>
-                        <tr className="hover:bg-muted/50">
+                        <tr 
+                          className="hover:bg-muted/50 cursor-pointer"
+                          onClick={() => navigate('/tasks')}
+                        >
                           <td className="py-3 px-4">Update API documentation</td>
                           <td className="py-3 px-4">
                             <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">Completed</span>
@@ -144,7 +159,10 @@ const Dashboard: React.FC = () => {
                             <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">Medium</span>
                           </td>
                         </tr>
-                        <tr className="hover:bg-muted/50">
+                        <tr 
+                          className="hover:bg-muted/50 cursor-pointer"
+                          onClick={() => navigate('/tasks')}
+                        >
                           <td className="py-3 px-4">Bug fixes for authentication module</td>
                           <td className="py-3 px-4">
                             <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">To Review</span>
@@ -171,7 +189,10 @@ const Dashboard: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="border rounded-md p-4">
+                    <div 
+                      className="border rounded-md p-4 cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => navigate('/projects')}
+                    >
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-medium">Website Redesign</h3>
@@ -191,7 +212,10 @@ const Dashboard: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className="border rounded-md p-4">
+                    <div 
+                      className="border rounded-md p-4 cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => navigate('/projects')}
+                    >
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-medium">Mobile App Development</h3>
