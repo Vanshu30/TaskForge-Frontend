@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -8,8 +7,8 @@ import ProjectsList from '@/components/ProjectsList';
 import { useAuth } from '@/context/AuthContext';
 import { Menu, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/hooks/use-toast';
 
-// Define a Project type that matches the one in ProjectsList
 interface Project {
   id: string;
   name: string;
@@ -26,10 +25,8 @@ const Projects = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  // Add state for projects
   const [projects, setProjects] = useState<Project[]>([]);
 
-  // Effect to load projects from localStorage
   useEffect(() => {
     const storedProjects = localStorage.getItem('projects');
     if (storedProjects) {
@@ -37,17 +34,21 @@ const Projects = () => {
     }
   }, []);
 
-  // Handle adding a new project
   const handleAddProject = (project: Project) => {
     const updatedProjects = [...projects, project];
     setProjects(updatedProjects);
     localStorage.setItem('projects', JSON.stringify(updatedProjects));
     
-    // Navigate to the project detail page instead of adding it to the list
-    navigate(`/projects/${project.id}`);
+    toast({
+      title: "Project created",
+      description: "Your new project has been created successfully."
+    });
+    
+    setTimeout(() => {
+      navigate(`/projects/${project.id}`);
+    }, 100);
   };
 
-  // If user is not logged in, redirect to login page
   if (!user) {
     navigate('/login');
     return null;

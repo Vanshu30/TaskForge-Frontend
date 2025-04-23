@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -58,9 +59,16 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects = [], onAddProject
     onAddProject(newProject);
     setOpen(false);
     form.reset();
+    
+    // Show success message
+    toast({
+      title: "Project created",
+      description: "Your new project has been created successfully."
+    });
   };
 
   const handleProjectClick = (projectId: string) => {
+    console.log("Navigating to project:", projectId);
     navigate(`/projects/${projectId}`);
   };
 
