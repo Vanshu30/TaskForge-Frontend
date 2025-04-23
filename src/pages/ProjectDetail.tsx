@@ -13,24 +13,15 @@ import { Menu, Settings, Users, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// Mock data until Supabase integration
-const MOCK_PROJECTS = {
-  '1': {
-    id: '1',
-    name: 'Website Redesign',
-    description: 'Redesign company website with new branding',
-  },
-  '2': {
-    id: '2',
-    name: 'Mobile App Development',
-    description: 'Create a new mobile app for customer engagement',
-  },
-  '3': {
-    id: '3',
-    name: 'Q2 Marketing Campaign',
-    description: 'Plan and execute Q2 marketing initiatives',
-  }
-};
+interface Project {
+  id: string;
+  name: string;
+  description: string;
+  status?: 'active' | 'completed' | 'on-hold';
+  lastUpdated?: string;
+  teamSize?: number;
+  tags?: string[];
+}
 
 const ProjectDetail = () => {
   const isMobile = useIsMobile();
@@ -40,7 +31,7 @@ const ProjectDetail = () => {
   const { projectId } = useParams();
   
   // Project state
-  const [project, setProject] = useState<any>(null);
+  const [project, setProject] = useState<Project | null>(null);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -48,18 +39,26 @@ const ProjectDetail = () => {
   // Initialize project data
   useEffect(() => {
     if (projectId) {
-      // Get project details
-      const projectData = MOCK_PROJECTS[projectId];
-      if (projectData) {
-        setProject(projectData);
+      // Load project from localStorage
+      const storedProjects = localStorage.getItem('projects');
+      if (storedProjects) {
+        const projects = JSON.parse(storedProjects);
+        const foundProject = projects.find((p: Project) => p.id === projectId);
         
-        // Initialize team members (normally from database)
-        setTeamMembers([
-          {id: 'user-1', name: 'Alex Johnson', email: 'alex@example.com', role: 'Project Manager', status: 'active'},
-          {id: 'user-2', name: 'Maria Garcia', email: 'maria@example.com', role: 'Designer', status: 'busy'},
-          {id: 'user-3', name: 'David Kim', email: 'david@example.com', role: 'Developer', status: 'away'},
-          {id: 'user-4', name: 'Sarah Wilson', email: 'sarah@example.com', role: 'QA Engineer', status: 'active'},
-        ]);
+        if (foundProject) {
+          console.log("Project found:", foundProject);
+          setProject(foundProject);
+          
+          // Initialize team members (normally from database)
+          setTeamMembers([
+            {id: 'user-1', name: 'Alex Johnson', email: 'alex@example.com', role: 'Project Manager', status: 'active'},
+            {id: 'user-2', name: 'Maria Garcia', email: 'maria@example.com', role: 'Designer', status: 'busy'},
+            {id: 'user-3', name: 'David Kim', email: 'david@example.com', role: 'Developer', status: 'away'},
+            {id: 'user-4', name: 'Sarah Wilson', email: 'sarah@example.com', role: 'QA Engineer', status: 'active'},
+          ]);
+        } else {
+          console.error("Project not found with ID:", projectId);
+        }
       }
     }
   }, [projectId]);
@@ -166,10 +165,18 @@ const ProjectDetail = () => {
     return null;
   }
 
-  // If project doesn't exist, redirect to projects page
+  // Show loading state while project is being fetched
   if (!project) {
-    navigate('/projects');
-    return null;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-medium mb-2">Loading project...</h2>
+          <p className="text-muted-foreground">
+            If loading takes too long, <Link to="/projects" className="text-primary hover:underline">return to projects</Link>
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

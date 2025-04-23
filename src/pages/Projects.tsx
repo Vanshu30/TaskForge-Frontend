@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -35,6 +36,7 @@ const Projects = () => {
   }, []);
 
   const handleAddProject = (project: Project) => {
+    console.log("Adding project:", project);
     const updatedProjects = [...projects, project];
     setProjects(updatedProjects);
     localStorage.setItem('projects', JSON.stringify(updatedProjects));
@@ -44,9 +46,11 @@ const Projects = () => {
       description: "Your new project has been created successfully."
     });
     
+    // Add a slight delay to ensure state has updated before navigation
     setTimeout(() => {
+      console.log("Navigating to:", `/projects/${project.id}`);
       navigate(`/projects/${project.id}`);
-    }, 100);
+    }, 200);
   };
 
   if (!user) {
