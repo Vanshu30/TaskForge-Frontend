@@ -91,7 +91,8 @@ const ProjectDetail = () => {
     };
 
     const handleTaskDelete = (event: CustomEvent) => {
-      if (event.detail && event.detail.taskId) {
+      if (event.detail) {
+        console.log("ProjectDetail - Task delete event received:", event.detail);
         const { tasks: updatedTasks } = event.detail;
         
         const taskArray = updatedTasks ? Object.values(updatedTasks) : [];
@@ -185,13 +186,23 @@ const ProjectDetail = () => {
   const handleDeleteTask = (taskId: string) => {
     console.log("ProjectDetail - Handling delete task:", taskId);
     
-    const storedTasks = localStorage.getItem(`tasks_${projectId}`);
-    const storedColumns = localStorage.getItem(`columns_${projectId}`);
+    if (!taskId) {
+      console.error("ProjectDetail - Cannot delete task: No taskId provided");
+      return;
+    }
     
-    if (storedTasks && storedColumns) {
-      try {
+    try {
+      const storedTasks = localStorage.getItem(`tasks_${projectId}`);
+      const storedColumns = localStorage.getItem(`columns_${projectId}`);
+      
+      if (storedTasks && storedColumns) {
         const tasksObj = JSON.parse(storedTasks);
         const columnsObj = JSON.parse(storedColumns);
+        
+        if (!tasksObj[taskId]) {
+          console.error("ProjectDetail - Task not found in tasks object:", taskId);
+          return;
+        }
         
         delete tasksObj[taskId];
         
@@ -216,14 +227,14 @@ const ProjectDetail = () => {
           detail: { taskId, tasks: tasksObj, columns: columnsObj }
         });
         window.dispatchEvent(updateEvent);
-      } catch (error) {
-        console.error("Error deleting task:", error);
-        toast({
-          title: "Error",
-          description: "Failed to delete the task. Please try again.",
-          variant: "destructive",
-        });
       }
+    } catch (error) {
+      console.error("ProjectDetail - Error deleting task:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the task. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 

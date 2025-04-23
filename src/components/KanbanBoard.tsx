@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Button } from '@/components/ui/button';
@@ -406,49 +405,56 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
   };
 
   const handleDeleteTask = (taskId) => {
-    if (!taskId) return;
+    if (!taskId) {
+      console.error("KanbanBoard - Cannot delete task: No taskId provided");
+      return;
+    }
     
     console.log("KanbanBoard - Deleting task with ID:", taskId);
     
-    // Create copies of the current state to modify
-    const updatedTasks = { ...tasks };
-    const updatedColumns = { ...columns };
-    
-    // Remove the task from the tasks object
-    delete updatedTasks[taskId];
-    
-    // Remove the task ID from all columns
-    Object.keys(updatedColumns).forEach(columnId => {
-      updatedColumns[columnId].taskIds = updatedColumns[columnId].taskIds.filter(id => id !== taskId);
-    });
-    
-    // Clear selected task if it was the one that was deleted
-    if (selectedTask && selectedTask.id === taskId) {
-      setSelectedTask(null);
-    }
-    
-    // Update state
-    setTasks(updatedTasks);
-    setColumns(updatedColumns);
-    
-    // Update localStorage
-    localStorage.setItem(`tasks_${projectId}`, JSON.stringify(updatedTasks));
-    localStorage.setItem(`columns_${projectId}`, JSON.stringify(updatedColumns));
-    
-    // Dispatch event for other components
-    const deleteEvent = new CustomEvent('taskDelete', {
-      detail: { taskId, tasks: updatedTasks, columns: updatedColumns }
-    });
-    window.dispatchEvent(deleteEvent);
-    
-    toast({
-      title: "Task deleted",
-      description: "The task has been successfully removed."
-    });
-    
-    // Call parent handler if provided
-    if (onTaskDelete) {
-      onTaskDelete(taskId);
+    try {
+      const updatedTasks = { ...tasks };
+      const updatedColumns = { ...columns };
+      
+      delete updatedTasks[taskId];
+      
+      Object.keys(updatedColumns).forEach(columnId => {
+        updatedColumns[columnId].taskIds = updatedColumns[columnId].taskIds.filter(id => id !== taskId);
+      });
+      
+      if (selectedTask && selectedTask.id === taskId) {
+        setSelectedTask(null);
+      }
+      
+      setTasks(updatedTasks);
+      setColumns(updatedColumns);
+      
+      localStorage.setItem(`tasks_${projectId}`, JSON.stringify(updatedTasks));
+      localStorage.setItem(`columns_${projectId}`, JSON.stringify(updatedColumns));
+      
+      const deleteEvent = new CustomEvent('taskDelete', {
+        detail: { taskId, tasks: updatedTasks, columns: updatedColumns }
+      });
+      window.dispatchEvent(deleteEvent);
+      
+      toast({
+        title: "Task deleted",
+        description: "The task has been successfully removed."
+      });
+      
+      if (onTaskDelete) {
+        onTaskDelete(taskId);
+      }
+      
+      console.log("KanbanBoard - Task deletion completed successfully");
+      
+    } catch (error) {
+      console.error("KanbanBoard - Error deleting task:", error);
+      toast({
+        title: "Error deleting task",
+        description: "An error occurred while trying to delete the task.",
+        variant: "destructive",
+      });
     }
   };
 

@@ -80,23 +80,29 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
 
   const handleDelete = () => {
     try {
-      console.log("Deleting task:", task.id);
+      console.log("TaskDialog - Deleting task with ID:", task.id);
+      
+      // Close the delete confirmation dialog
       setShowDeleteConfirm(false);
       
-      if (onDeleteTask) {
+      // Call the parent's onDeleteTask function
+      if (onDeleteTask && task.id) {
         onDeleteTask(task.id);
+        console.log("TaskDialog - Delete handler called successfully");
+        
         toast({
           title: "Task deleted",
           description: "The task has been removed successfully"
         });
       }
       
+      // Close the task dialog
       onClose();
     } catch (error) {
-      console.error("Error deleting task:", error);
+      console.error("TaskDialog - Error deleting task:", error);
       toast({
         title: "Error",
-        description: "Failed to delete task",
+        description: "Failed to delete task. Please try again.",
         variant: "destructive",
       });
     }
