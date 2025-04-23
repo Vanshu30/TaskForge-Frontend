@@ -13,9 +13,13 @@ const Login: React.FC = () => {
   // Check if users exist in localStorage on component mount
   useEffect(() => {
     const storedUsers = localStorage.getItem('users');
+    console.log('Checking users in localStorage:', storedUsers);
+    
     const users = storedUsers ? JSON.parse(storedUsers) : [];
     if (users.length === 0) {
       setLoginError("No accounts found. Please sign up first.");
+    } else {
+      setLoginError(null); // Clear error if users exist
     }
   }, []);
 

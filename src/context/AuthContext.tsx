@@ -1,6 +1,7 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export type UserRole = 'Admin' | 'Manager' | 'Developer' | 'Viewer' | 'Project Manager';
 
@@ -82,6 +83,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // This is just a mock implementation
       // In a real app, this would be an API call to your authentication service
       const storedUsers = localStorage.getItem('users');
+      
+      // Debug: Log what's in localStorage
+      console.log('All localStorage keys:', Object.keys(localStorage));
+      console.log('Raw users from localStorage:', storedUsers);
+      
       const users = storedUsers ? JSON.parse(storedUsers) : [];
       
       console.log('Logging in with:', email, password);
@@ -134,7 +140,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       setError(null);
       
+      // Debug: Log localStorage state before signup
+      console.log('localStorage before signup:', Object.keys(localStorage));
+      
       const storedUsers = localStorage.getItem('users');
+      console.log('Raw users before signup:', storedUsers);
+      
       const users = storedUsers ? JSON.parse(storedUsers) : [];
       
       // Check if email is already registered
@@ -183,7 +194,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('users', JSON.stringify(users));
       
       console.log('User registered:', newUser);
-      console.log('All users:', users);
+      console.log('All users after registration:', users);
+      console.log('localStorage after signup:', Object.keys(localStorage));
       
       // Remove password before storing in state
       const { password, ...userWithoutPassword } = newUser;
