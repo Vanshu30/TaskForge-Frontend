@@ -84,8 +84,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const storedUsers = localStorage.getItem('users');
       const users = storedUsers ? JSON.parse(storedUsers) : [];
       
+      console.log('Logging in with:', email, password);
+      console.log('Available users:', users);
+      
+      // Fix: Use case-insensitive email comparison and exact password match
       const foundUser = users.find(
-        (u: any) => u.email === email && u.password === password
+        (u: any) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
       );
       
       if (!foundUser) {
@@ -134,7 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const users = storedUsers ? JSON.parse(storedUsers) : [];
       
       // Check if email is already registered
-      if (users.some((u: any) => u.email === userData.email)) {
+      if (users.some((u: any) => u.email.toLowerCase() === userData.email.toLowerCase())) {
         throw new Error('Email already registered');
       }
 
@@ -177,6 +181,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Save user
       users.push(newUser);
       localStorage.setItem('users', JSON.stringify(users));
+      
+      console.log('User registered:', newUser);
+      console.log('All users:', users);
       
       // Remove password before storing in state
       const { password, ...userWithoutPassword } = newUser;
