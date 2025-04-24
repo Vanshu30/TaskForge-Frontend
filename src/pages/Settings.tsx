@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -54,7 +53,7 @@ const Settings = () => {
   const [weekStartDay, setWeekStartDay] = useState('monday');
   const [highContrastMode, setHighContrastMode] = useState(false);
   const [largeText, setLargeText] = useState(false);
-  const [defaultProject, setDefaultProject] = useState('');
+  const [defaultProject, setDefaultProject] = useState('none');
   const [customKeyboardShortcuts, setCustomKeyboardShortcuts] = useState(true);
   const [inlineCommentStyle, setInlineCommentStyle] = useState('stacked');
   const [languageFormat, setLanguageFormat] = useState('en-US');
@@ -340,7 +339,7 @@ const Settings = () => {
                           <SelectValue placeholder="Select default project" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None (Show Dashboard)</SelectItem>
+                          <SelectItem value="none">None (Show Dashboard)</SelectItem>
                           <SelectItem value="project-1">Website Redesign</SelectItem>
                           <SelectItem value="project-2">Mobile App</SelectItem>
                           <SelectItem value="project-3">API Integration</SelectItem>
