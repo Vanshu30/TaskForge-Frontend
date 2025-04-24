@@ -1,20 +1,15 @@
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { getProjects } from '@/api';
+import DashboardSidebar from '@/components/DashboardSidebar';
+import Header from '@/components/Header';
+import ProjectsList from '@/components/ProjectsList';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Header from '@/components/Header';
-import DashboardSidebar from '@/components/DashboardSidebar';
 import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu } from 'lucide-react';
-import ProjectsList from '@/components/ProjectsList';
-
-
-import { List } from 'lucide-react';
-import { Folder } from 'lucide-react';
-
+import { Folder, List, Menu } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -30,6 +25,14 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     setSidebarOpen(!isMobile);
   }, [isMobile]);
+  
+  useEffect(() => {
+    getProjects().then(data => {
+      setProjects(data);
+    }).catch(err => {
+      console.error('Failed to load projects:', err);
+    });
+  }, []);
 
   useEffect(() => {
     if (!user) {

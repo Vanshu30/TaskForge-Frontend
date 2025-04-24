@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
@@ -24,7 +23,7 @@ const Footer: React.FC = () => {
                   fill="#0052CC"
                 />
               </svg>
-              <span className="text-xl font-bold">TaskFlow</span>
+              <span className="text-xl font-bold">TaskForge</span>
             </div>
             <p className="text-sm text-gray-300 mb-4">
               The #1 software development tool used by agile teams.
@@ -86,7 +85,7 @@ const Footer: React.FC = () => {
         </div>
         
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; {new Date().getFullYear()} TaskFlow, Inc. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} TaskForgee, Inc. All rights reserved.</p>
         </div>
       </div>
     </footer>

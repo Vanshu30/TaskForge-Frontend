@@ -1,11 +1,10 @@
-
-import React, { useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
 import AuthForm, { LoginFormValues } from '@/components/AuthForm';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const { login, isAuthenticated } = useAuth();
@@ -77,7 +76,7 @@ const Login = () => {
               />
             </svg>
             <h2 className="mt-2 text-3xl font-extrabold text-gray-900">
-              Sign in to TaskFlow
+              Sign in to TaskForge
             </h2>
             <p className="mt-2 text-sm text-gray-500">
               Manage your projects efficiently and collaborate with your team
