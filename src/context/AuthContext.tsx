@@ -15,6 +15,8 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  isAuthenticated: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   signup: (userData: any) => Promise<void>;
@@ -24,6 +26,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,10 +34,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+    setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
+      setLoading(true);
       // Simulated authentication
       const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
       const user = storedUsers.find((u: any) => u.email === email && u.password === password);
@@ -65,6 +70,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       throw new Error('Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,6 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (userData: any) => {
     try {
+      setLoading(true);
       const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
       
       if (storedUsers.some((u: any) => u.email === userData.email)) {
@@ -98,11 +106,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       navigate('/package-selection');
     } catch (error) {
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, signup }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated: !!user, 
+      loading, 
+      login, 
+      logout, 
+      signup 
+    }}>
       {children}
     </AuthContext.Provider>
   );
