@@ -28,7 +28,11 @@ const Hero: React.FC = () => {
                 </Button>
               </Link>
               <Link to="/login">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white/10">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="w-full sm:w-auto border-white/50 text-white hover:bg-white/20 hover:border-white/70"
+                >
                   Log in
                 </Button>
               </Link>
