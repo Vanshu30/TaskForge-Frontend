@@ -96,8 +96,8 @@ const Issues = () => {
   
   const [viewMode, setViewMode] = useState<'compact' | 'expanded'>('compact');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPriority, setSelectedPriority] = useState<string>('');
-  const [selectedLabel, setSelectedLabel] = useState<string>('');
+  const [selectedPriority, setSelectedPriority] = useState<string>('all');
+  const [selectedLabel, setSelectedLabel] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('priority');
   const [issues, setIssues] = useState(mockIssues);
 
@@ -117,12 +117,12 @@ const Issues = () => {
     }
     
     // Priority filter
-    if (selectedPriority && issue.priority !== selectedPriority) {
+    if (selectedPriority !== 'all' && issue.priority !== selectedPriority) {
       return false;
     }
     
     // Label filter
-    if (selectedLabel && !issue.labels.includes(selectedLabel)) {
+    if (selectedLabel !== 'all' && !issue.labels.includes(selectedLabel)) {
       return false;
     }
     
@@ -205,7 +205,7 @@ const Issues = () => {
                   <SelectValue placeholder="Priority" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Priorities</SelectItem>
+                  <SelectItem value="all">All Priorities</SelectItem>
                   <SelectItem value="high">High</SelectItem>
                   <SelectItem value="medium">Medium</SelectItem>
                   <SelectItem value="low">Low</SelectItem>
@@ -217,7 +217,7 @@ const Issues = () => {
                   <SelectValue placeholder="Label" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Labels</SelectItem>
+                  <SelectItem value="all">All Labels</SelectItem>
                   <SelectItem value="Frontend">Frontend</SelectItem>
                   <SelectItem value="Backend">Backend</SelectItem>
                   <SelectItem value="UI">UI</SelectItem>
