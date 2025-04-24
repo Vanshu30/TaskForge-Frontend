@@ -1,27 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogFooter
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
+
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Calendar, MessageSquare, Trash2, Bug, CheckCircle, AlertCircle, Clock, Edit } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Calendar, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
 import EditTaskDialog from './EditTaskDialog';
 
@@ -31,267 +17,215 @@ interface TaskDialogProps {
   onClose: () => void;
   onAddComment: (taskId: string, comment: string) => void;
   onDeleteTask: (taskId: string) => void;
-  onUpdateTask?: (updatedTask: any) => void;
-  teamMembers: any[];
+  onUpdateTask: (task: any) => void;
+  teamMembers?: {id: string; name: string; email: string}[];
 }
 
-const TaskDialog: React.FC<TaskDialogProps> = ({ 
+const TaskDialog = ({ 
   task, 
   isOpen, 
   onClose, 
-  onAddComment,
+  onAddComment, 
   onDeleteTask,
   onUpdateTask,
-  teamMembers 
-}) => {
+  teamMembers = []
+}: TaskDialogProps) => {
   const [comment, setComment] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [localComments, setLocalComments] = useState(task?.comments || []);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-
-  useEffect(() => {
-    // Update local comments when task.comments changes
-    if (task?.comments) {
-      setLocalComments(task.comments);
-    }
-  }, [task?.comments]);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const handleAddComment = () => {
     if (comment.trim()) {
-      // Create a new comment for immediate display
-      const newComment = {
-        id: `comment-${Date.now()}`,
-        text: comment,
-        user: 'Current User',
-        timestamp: new Date().toISOString(),
-      };
-      
-      // Update local state immediately
-      setLocalComments([...localComments, newComment]);
-      
-      // Send to parent for persistence
       onAddComment(task.id, comment);
       setComment('');
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && comment.trim()) {
-      handleAddComment();
-    }
-  };
-
   const handleDelete = () => {
-    if (!task || !task.id) {
-      console.error("TaskDialog - Cannot delete task: Missing task ID");
-      toast({
-        title: "Error",
-        description: "Cannot delete task: Invalid task data",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Close the confirmation dialog
-    setShowDeleteConfirm(false);
+    // Close the confirmation dialog first
+    setDeleteConfirmOpen(false);
     
-    try {
-      // Call the parent's onDeleteTask function
+    // Then close the task dialog
+    onClose();
+    
+    // Finally, trigger the delete action after UI updates
+    setTimeout(() => {
       onDeleteTask(task.id);
       
-      // Close the task dialog
-      onClose();
-      
-      // Show success toast
       toast({
         title: "Task deleted",
-        description: "The task has been removed successfully"
+        description: "Task has been removed from the board"
       });
-    } catch (error) {
-      console.error("TaskDialog - Error in handleDelete:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete the task. Please try again.",
-        variant: "destructive",
-      });
-    }
+    }, 100);
   };
 
-  const handleSaveTask = (updatedTask) => {
-    if (onUpdateTask) {
-      onUpdateTask(updatedTask);
-      setShowEditDialog(false);
-    }
-  };
-
-  if (!task) return null;
-
-  const getTaskTypeIcon = () => {
-    switch (task.type) {
-      case 'bug':
-        return <Bug className="h-4 w-4 mr-1" />;
-      case 'feature':
-        return <CheckCircle className="h-4 w-4 mr-1" />;
-      case 'enhancement':
-        return <AlertCircle className="h-4 w-4 mr-1" />;
-      case 'task':
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'low':
+        return 'bg-green-100 text-green-800';
+      case 'medium':
+        return 'bg-blue-100 text-blue-800';
+      case 'high':
+        return 'bg-red-100 text-red-800';
       default:
-        return <Clock className="h-4 w-4 mr-1" />;
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getTaskTypeBadgeColor = () => {
-    switch (task.type) {
+  const getTypeIcon = (type: string) => {
+    switch (type) {
       case 'bug':
-        return 'bg-red-500';
+        return <div className="h-4 w-4 rounded-full bg-red-500" title="Bug"></div>;
       case 'feature':
-        return 'bg-green-500';
+        return <div className="h-4 w-4 rounded-full bg-green-500" title="Feature"></div>;
       case 'enhancement':
-        return 'bg-blue-500';
-      case 'task':
+        return <div className="h-4 w-4 rounded-full bg-blue-500" title="Enhancement"></div>;
       default:
-        return 'bg-amber-500';
+        return <div className="h-4 w-4 rounded-full bg-amber-500" title="Task"></div>;
     }
   };
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh]">
           <DialogHeader>
-            <div className="flex justify-between items-start">
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <DialogTitle className="text-xl">{task.title}</DialogTitle>
-                  {task.type && (
-                    <Badge className={getTaskTypeBadgeColor()}>
-                      {getTaskTypeIcon()}
-                      {task.type.charAt(0).toUpperCase() + task.type.slice(1)}
-                    </Badge>
-                  )}
-                </div>
-                <Badge variant="outline" className="mt-1 w-fit">
-                  {task.id}
-                </Badge>
-              </div>
-              <Badge className={
-                task.priority === 'high' ? 'bg-red-500' :
-                task.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-              }>
-                {task.priority}
-              </Badge>
-            </div>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              {getTypeIcon(task.type)}
+              {task.title}
+            </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">{task.description}</p>
-            
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4 mr-2" />
-              <span>Due: {format(new Date(task.dueDate), 'PPP')}</span>
-            </div>
-            
-            <div className="flex items-center">
-              <span className="text-sm font-medium mr-2">Assignee:</span>
-              <div className="flex items-center">
-                <Avatar className="h-6 w-6 mr-2">
-                  <AvatarFallback>
-                    {task.assignee.name.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm">{task.assignee.name}</span>
-              </div>
-            </div>
-            
-            <div className="border-t pt-4">
-              <h3 className="text-sm font-medium flex items-center mb-4">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Comments
-              </h3>
-              
-              <div className="space-y-3 max-h-[200px] overflow-y-auto">
-                {localComments && localComments.length > 0 ? (
-                  localComments.map(comment => (
-                    <div key={comment.id} className="bg-muted p-3 rounded-md">
-                      <div className="flex justify-between items-center">
-                        <div className="font-medium text-sm">{comment.user}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {format(new Date(comment.timestamp), 'PPp')}
-                        </div>
-                      </div>
-                      <p className="text-sm mt-1">{comment.text}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-muted-foreground text-center">No comments yet</p>
+          <ScrollArea className="max-h-[70vh]">
+            <div className="space-y-4 p-1">
+              {/* Task metadata */}
+              <div className="flex flex-wrap gap-2 items-center mb-4">
+                <Badge className={getPriorityColor(task.priority)}>
+                  {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+                </Badge>
+                
+                {task.dueDate && (
+                  <Badge variant="outline" className="flex items-center">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    {format(new Date(task.dueDate), 'MMM dd, yyyy')}
+                  </Badge>
                 )}
+                
+                <Badge variant="outline" className="ml-auto">
+                  {task.type.charAt(0).toUpperCase() + task.type.slice(1)}
+                </Badge>
               </div>
               
-              <div className="flex mt-4">
-                <Input 
-                  placeholder="Add a comment..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="flex-1"
-                />
-                <Button 
-                  onClick={handleAddComment} 
-                  className="ml-2"
-                  disabled={!comment.trim()}
-                >
-                  Add
-                </Button>
+              {/* Task description */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Description</h3>
+                <p className="text-gray-800 whitespace-pre-wrap">
+                  {task.description || "No description provided."}
+                </p>
+              </div>
+              
+              {/* Assignee */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Assignee</h3>
+                <div className="flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-2">
+                    {task.assignee?.name ? task.assignee.name.charAt(0) : "?"}
+                  </div>
+                  <span>{task.assignee?.name || "Unassigned"}</span>
+                </div>
+              </div>
+              
+              {/* Comments section */}
+              <div className="mt-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-3">Comments</h3>
+                
+                {task.comments && task.comments.length > 0 ? (
+                  <div className="space-y-4">
+                    {task.comments.map((comment) => (
+                      <div key={comment.id} className="bg-gray-50 p-3 rounded-md">
+                        <div className="flex items-center mb-2">
+                          <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-2">
+                            {comment.user ? comment.user.charAt(0) : "?"}
+                          </div>
+                          <span className="font-medium">{comment.user || "Unknown user"}</span>
+                          <span className="text-gray-400 text-xs ml-auto">
+                            {comment.timestamp ? format(new Date(comment.timestamp), 'MMM dd, h:mm a') : "No date"}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700">{comment.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">No comments yet.</p>
+                )}
+                
+                {/* Add comment */}
+                <div className="mt-4 flex">
+                  <Input
+                    placeholder="Add a comment..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    variant="outline" 
+                    onClick={handleAddComment}
+                    className="ml-2"
+                    disabled={!comment.trim()}
+                  >
+                    Comment
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          </ScrollArea>
           
-          <DialogFooter>
-            <div className="flex gap-2 w-full">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowEditDialog(true)}
-                className="flex items-center"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={() => setShowDeleteConfirm(true)}
-                className="flex items-center"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
-            </div>
-          </DialogFooter>
+          <div className="mt-4 flex justify-between">
+            <Button variant="secondary" onClick={() => setEditDialogOpen(true)}>
+              Edit Task
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => setDeleteConfirmOpen(true)}
+            >
+              Delete Task
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
       
-      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center">
+              <AlertTriangle className="mr-2 h-5 w-5 text-red-500" />
+              Delete Task
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete this task? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-500">
+            <AlertDialogAction 
+              className="bg-red-500 hover:bg-red-600"
+              onClick={handleDelete}
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {showEditDialog && (
+      {/* Edit task dialog */}
+      {editDialogOpen && (
         <EditTaskDialog
           task={task}
-          isOpen={showEditDialog}
-          onClose={() => setShowEditDialog(false)}
-          onSave={handleSaveTask}
+          isOpen={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          onSave={onUpdateTask}
           teamMembers={teamMembers}
         />
       )}
