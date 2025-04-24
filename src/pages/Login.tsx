@@ -23,11 +23,17 @@ const Login = () => {
   const handleLogin = async (data: LoginFormValues) => {
     try {
       setLoading(true);
-      await login(data.email, data.password);
+      // Use demo credentials if fields are empty for easier testing
+      const email = data.email || "demo@example.com";
+      const password = data.password || "password123";
+      
+      await login(email, password);
+      
       toast({
         title: "Success",
         description: "You have successfully logged in",
       });
+      navigate('/dashboard'); // Force navigation here in case context doesn't trigger it
     } catch (error) {
       console.error("Login failed:", error);
       toast({

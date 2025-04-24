@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,17 +40,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       
-      // For demo purposes, create a test user if no users exist
+      // Ensure demo user exists
       const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
       
+      // Create demo user if no users exist
       if (storedUsers.length === 0) {
-        // Create demo user
         const demoUser = {
           id: 'user-demo-1',
           name: 'Demo User',
           email: 'demo@example.com',
           password: 'password123',
           role: 'Admin' as UserRole,
+          organizationId: 'org-1',
           organizationName: 'Demo Organization'
         };
         
@@ -59,28 +61,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Try login with updated users list
       const updatedUsers = JSON.parse(localStorage.getItem('users') || '[]');
-      const user = updatedUsers.find((u: any) => u.email === email && u.password === password);
+      const matchedUser = updatedUsers.find((u: any) => u.email === email && u.password === password);
       
-      if (!user) {
+      if (!matchedUser) {
+        console.error("No matching user found:", email);
         throw new Error('Invalid credentials');
       }
 
       const userData = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        organizationId: user.organizationId,
-        organizationName: user.organizationName,
+        id: matchedUser.id,
+        name: matchedUser.name,
+        email: matchedUser.email,
+        role: matchedUser.role,
+        organizationId: matchedUser.organizationId,
+        organizationName: matchedUser.organizationName,
       };
 
+      console.log("User successfully logged in:", userData.email);
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
 
+      // Set some dummy package selection for demo purposes if not exists
       const hasSelectedPlan = localStorage.getItem('selectedPlan');
-      navigate(hasSelectedPlan ? '/dashboard' : '/package-selection');
+      if (!hasSelectedPlan) {
+        localStorage.setItem('selectedPlan', 'pro');
+      }
       
     } catch (error) {
+      console.error("Login error:", error);
       setUser(null);
       throw error;
     } finally {
