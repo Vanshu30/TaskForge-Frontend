@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -29,12 +28,14 @@ interface AddTaskDialogProps {
 const AddTaskDialog = ({ projectId, onAddTask, teamMembers = [] }: AddTaskDialogProps) => {
   const [open, setOpen] = React.useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [customAssignee, setCustomAssignee] = useState('');
+  const [isCustomAssignee, setIsCustomAssignee] = useState(false);
   
   const form = useForm({
     defaultValues: {
       title: '',
       description: '',
-      assignee: '',
+      assignee: 'unassigned',
       priority: 'medium',
       type: 'task'
     },
@@ -42,22 +43,33 @@ const AddTaskDialog = ({ projectId, onAddTask, teamMembers = [] }: AddTaskDialog
 
   const onSubmit = async (data) => {
     try {
-      // Create new task with due date and assignee
-      const selectedAssignee = data.assignee === "unassigned" 
-        ? null 
-        : teamMembers.find(member => member.id === data.assignee);
+      let assigneeData;
       
-      const assigneeData = selectedAssignee 
-        ? {
-            id: selectedAssignee.id,
-            name: selectedAssignee.name,
-            avatar: null,
-          }
-        : {
-            id: 'unassigned',
-            name: 'Unassigned',
-            avatar: null,
-          };
+      if (isCustomAssignee && customAssignee) {
+        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customAssignee);
+        assigneeData = {
+          id: `custom-${Date.now()}`,
+          name: isEmail ? customAssignee.split('@')[0] : customAssignee,
+          email: isEmail ? customAssignee : null,
+          avatar: null,
+        };
+      } else {
+        const selectedAssignee = data.assignee === "unassigned" 
+          ? null 
+          : teamMembers.find(member => member.id === data.assignee);
+        
+        assigneeData = selectedAssignee 
+          ? {
+              id: selectedAssignee.id,
+              name: selectedAssignee.name,
+              avatar: null,
+            }
+          : {
+              id: 'unassigned',
+              name: 'Unassigned',
+              avatar: null,
+            };
+      }
 
       const newTask = {
         id: `task-${Date.now()}`,
@@ -74,6 +86,8 @@ const AddTaskDialog = ({ projectId, onAddTask, teamMembers = [] }: AddTaskDialog
       setOpen(false);
       form.reset();
       setSelectedDate(new Date());
+      setCustomAssignee('');
+      setIsCustomAssignee(false);
       toast({
         title: "Task created",
         description: "New task has been added to To Do column",
@@ -189,19 +203,47 @@ const AddTaskDialog = ({ projectId, onAddTask, teamMembers = [] }: AddTaskDialog
           </div>
           <div className="space-y-2">
             <Label htmlFor="assignee">Assign To</Label>
-            <Select onValueChange={(value) => form.setValue('assignee', value)} defaultValue="unassigned">
-              <SelectTrigger>
-                <SelectValue placeholder="Select team member" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-                {teamMembers.map(member => (
-                  <SelectItem key={member.id} value={member.id}>
-                    {member.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isCustomAssignee ? (
+              <div className="space-y-2">
+                <Input
+                  placeholder="Enter email or name"
+                  value={customAssignee}
+                  onChange={(e) => setCustomAssignee(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsCustomAssignee(false)}
+                >
+                  Back to Team List
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Select onValueChange={(value) => form.setValue('assignee', value)} defaultValue="unassigned">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select team member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {teamMembers.map(member => (
+                      <SelectItem key={member.id} value={member.id}>
+                        {member.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsCustomAssignee(true)}
+                >
+                  Assign by Email/Name
+                </Button>
+              </div>
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
