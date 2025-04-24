@@ -16,7 +16,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 import Settings from "./pages/Settings";
-import Calendar from "./pages/Calendar";
+import Issues from "./pages/Issues";
 import Tasks from "./pages/Tasks";
 import Teams from "./pages/Teams";
 
@@ -67,7 +67,7 @@ const App = () => {
               <Route path="/profile" element={<Profile />} />
               
               <Route path="/settings" element={<Settings />} />
-              <Route path="/calendar" element={<Calendar />} />
+              <Route path="/issues" element={<Issues />} />
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/teams" element={<Teams />} />
               <Route path="*" element={<NotFound />} />

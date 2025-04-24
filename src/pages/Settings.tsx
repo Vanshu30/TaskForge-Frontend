@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -9,10 +10,10 @@ import {
   Sun, 
   Moon, 
   Check,
-  ArrowLeft
+  ArrowLeft,
+  Monitor
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -27,8 +28,6 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from '@/hooks/use-toast';
-import { Textarea } from '@/components/ui/textarea';
-
 
 const applyTheme = (theme: string) => {
   const root = document.documentElement;
@@ -55,7 +54,10 @@ const Settings = () => {
   const [weekStartDay, setWeekStartDay] = useState('monday');
   const [highContrastMode, setHighContrastMode] = useState(false);
   const [largeText, setLargeText] = useState(false);
-  
+  const [defaultProject, setDefaultProject] = useState('');
+  const [customKeyboardShortcuts, setCustomKeyboardShortcuts] = useState(true);
+  const [inlineCommentStyle, setInlineCommentStyle] = useState('stacked');
+  const [languageFormat, setLanguageFormat] = useState('en-US');
 
   useEffect(() => {
     applyTheme(theme);
@@ -73,8 +75,6 @@ const Settings = () => {
       description: "Your settings have been updated successfully.",
     });
   };
-
-  
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -99,7 +99,10 @@ const Settings = () => {
           <Tabs defaultValue="appearance" className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="appearance">Appearance</TabsTrigger>
-              <TabsTrigger value="preferences">Preferences</TabsTrigger>
+              <TabsTrigger value="issueView">Issue View</TabsTrigger>
+              <TabsTrigger value="defaults">Defaults & Sorting</TabsTrigger>
+              <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
+              <TabsTrigger value="shortcutsAndFormat">Shortcuts & Format</TabsTrigger>
             </TabsList>
             
             <TabsContent value="appearance">
@@ -131,7 +134,7 @@ const Settings = () => {
                           className={`cursor-pointer flex flex-col items-center p-3 rounded-md border ${theme === 'system' ? 'border-primary bg-primary/5' : 'border-gray-200'}`}
                           onClick={() => setTheme('system')}
                         >
-                          <SettingsIcon className="h-6 w-6 mb-1" />
+                          <Monitor className="h-6 w-6 mb-1" />
                           <span className="text-sm">System</span>
                         </div>
                       </div>
@@ -157,44 +160,10 @@ const Settings = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Accessibility</CardTitle>
-                    <CardDescription>Adjust settings for better accessibility</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="high-contrast">High Contrast Mode</Label>
-                        <p className="text-sm text-muted-foreground">Increase contrast for better visibility</p>
-                      </div>
-                      <Switch 
-                        id="high-contrast" 
-                        checked={highContrastMode}
-                        onCheckedChange={setHighContrastMode}
-                      />
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="large-text">Larger Text</Label>
-                        <p className="text-sm text-muted-foreground">Increase text size for better readability</p>
-                      </div>
-                      <Switch 
-                        id="large-text" 
-                        checked={largeText}
-                        onCheckedChange={setLargeText}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </TabsContent>
             
-            <TabsContent value="preferences">
+            <TabsContent value="issueView">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
@@ -241,9 +210,79 @@ const Settings = () => {
                         </div>
                       </div>
                     </div>
+
+                    <div className="space-y-2">
+                      <Label>Inline Comment View Style</Label>
+                      <RadioGroup value={inlineCommentStyle} onValueChange={setInlineCommentStyle}>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="stacked" id="stacked" />
+                          <Label htmlFor="stacked">Stacked comments</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="side-by-side" id="side-by-side" />
+                          <Label htmlFor="side-by-side">Side-by-side comments</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
                   </CardContent>
                 </Card>
                 
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Custom Issue Grouping</CardTitle>
+                    <CardDescription>Configure how issues are grouped</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label>Group Issues By</Label>
+                      <RadioGroup defaultValue="status">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="status" id="group-status" />
+                          <Label htmlFor="group-status">Status</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="assignee" id="group-assignee" />
+                          <Label htmlFor="group-assignee">Assignee</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="priority" id="group-priority" />
+                          <Label htmlFor="group-priority">Priority</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="label" id="group-label" />
+                          <Label htmlFor="group-label">Label</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="due-date" id="group-due-date" />
+                          <Label htmlFor="group-due-date">Due Date</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="show-closed">Show Closed Issues</Label>
+                        <p className="text-sm text-muted-foreground">Include resolved issues in views</p>
+                      </div>
+                      <Switch id="show-closed" defaultChecked />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="filter-label">Filter by Label</Label>
+                        <p className="text-sm text-muted-foreground">Use labels to filter issues</p>
+                      </div>
+                      <Switch id="filter-label" defaultChecked />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="defaults">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Default Sorting and Filters</CardTitle>
@@ -287,10 +326,255 @@ const Settings = () => {
                     </div>
                   </CardContent>
                 </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Default Project</CardTitle>
+                    <CardDescription>Set your default project on login</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="default-project">Default Project</Label>
+                      <Select value={defaultProject} onValueChange={setDefaultProject}>
+                        <SelectTrigger id="default-project">
+                          <SelectValue placeholder="Select default project" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">None (Show Dashboard)</SelectItem>
+                          <SelectItem value="project-1">Website Redesign</SelectItem>
+                          <SelectItem value="project-2">Mobile App</SelectItem>
+                          <SelectItem value="project-3">API Integration</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        This project will be shown when you first log in
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Default Issue Activity Filter</Label>
+                      <RadioGroup defaultValue="all">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="all" id="all-issues" />
+                          <Label htmlFor="all-issues">All issues</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="last-updated" id="last-updated" />
+                          <Label htmlFor="last-updated">Last updated</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="recently-commented" id="recently-commented" />
+                          <Label htmlFor="recently-commented">Recently commented</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="last-7-days" id="last-7-days" />
+                          <Label htmlFor="last-7-days">Opened in last 7 days</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
-            
-            {/* Keyboard shortcuts, notifications and profile sections have been removed */}
+
+            <TabsContent value="accessibility">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Accessibility</CardTitle>
+                    <CardDescription>Adjust settings for better accessibility</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="high-contrast">High Contrast Mode</Label>
+                        <p className="text-sm text-muted-foreground">Increase contrast for better visibility</p>
+                      </div>
+                      <Switch 
+                        id="high-contrast" 
+                        checked={highContrastMode}
+                        onCheckedChange={setHighContrastMode}
+                      />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="large-text">Larger Text</Label>
+                        <p className="text-sm text-muted-foreground">Increase text size for better readability</p>
+                      </div>
+                      <Switch 
+                        id="large-text" 
+                        checked={largeText}
+                        onCheckedChange={setLargeText}
+                      />
+                    </div>
+
+                    <Separator />
+                    
+                    <div className="space-y-2">
+                      <Label>Text Scaling</Label>
+                      <div className="flex items-center">
+                        <span className="text-sm pr-2">Small</span>
+                        <input 
+                          type="range" 
+                          min="80" 
+                          max="150" 
+                          step="10" 
+                          defaultValue="100"
+                          className="w-full"
+                        />
+                        <span className="text-sm pl-2">Large</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Focus & Motion</CardTitle>
+                    <CardDescription>Settings for focus and motion preferences</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="focus-outlines">Focus Outlines</Label>
+                        <p className="text-sm text-muted-foreground">Show outlines around focused elements</p>
+                      </div>
+                      <Switch id="focus-outlines" defaultChecked />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="reduce-motion">Reduce Motion</Label>
+                        <p className="text-sm text-muted-foreground">Minimize animations throughout the interface</p>
+                      </div>
+                      <Switch id="reduce-motion" defaultChecked={false} />
+                    </div>
+
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="screen-reader">Screen Reader Optimization</Label>
+                        <p className="text-sm text-muted-foreground">Optimize layout for screen readers</p>
+                      </div>
+                      <Switch id="screen-reader" defaultChecked={false} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="shortcutsAndFormat">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Keyboard Shortcuts</CardTitle>
+                    <CardDescription>Configure keyboard shortcut settings</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="enable-shortcuts">Enable Keyboard Shortcuts</Label>
+                        <p className="text-sm text-muted-foreground">Use keyboard shortcuts to navigate</p>
+                      </div>
+                      <Switch 
+                        id="enable-shortcuts" 
+                        checked={customKeyboardShortcuts}
+                        onCheckedChange={setCustomKeyboardShortcuts}
+                      />
+                    </div>
+                    
+                    <div className="space-y-4 mt-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Create new issue</span>
+                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">c</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Search</span>
+                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">s</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Go to dashboard</span>
+                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">g d</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Go to issues</span>
+                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">g i</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Go to settings</span>
+                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">g s</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Toggle sidebar</span>
+                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">\</code>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Language & Date Format</CardTitle>
+                    <CardDescription>Set your preferred language and date formats</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="language-format">Language</Label>
+                      <Select value={languageFormat} onValueChange={setLanguageFormat}>
+                        <SelectTrigger id="language-format">
+                          <SelectValue placeholder="Select language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en-US">English (US)</SelectItem>
+                          <SelectItem value="en-GB">English (UK)</SelectItem>
+                          <SelectItem value="es-ES">Español</SelectItem>
+                          <SelectItem value="fr-FR">Français</SelectItem>
+                          <SelectItem value="de-DE">Deutsch</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Date Format</Label>
+                      <RadioGroup defaultValue="mdy">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="mdy" id="mdy" />
+                          <Label htmlFor="mdy">MM/DD/YYYY (US)</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="dmy" id="dmy" />
+                          <Label htmlFor="dmy">DD/MM/YYYY (UK, EU)</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="ymd" id="ymd" />
+                          <Label htmlFor="ymd">YYYY-MM-DD (ISO)</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Time Format</Label>
+                      <RadioGroup defaultValue="12h">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="12h" id="12h" />
+                          <Label htmlFor="12h">12-hour (AM/PM)</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="24h" id="24h" />
+                          <Label htmlFor="24h">24-hour</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
           </Tabs>
           
           <div className="mt-8 flex justify-end">
