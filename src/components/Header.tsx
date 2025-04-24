@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -57,17 +56,17 @@ const Header: React.FC = () => {
                   {isLandingPage ? (
                     <>
                       <Link 
-                        to="/login" 
+                        to="/signup" 
                         className="block w-full text-center py-2 font-medium text-jira-text hover:text-primary transition-colors"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        Log in
+                        Get started
                       </Link>
                       <Link 
-                        to="/signup" 
+                        to="/login" 
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        <Button className="w-full">Get started</Button>
+                        <Button className="w-full">Log in</Button>
                       </Link>
                     </>
                   ) : (
@@ -105,11 +104,11 @@ const Header: React.FC = () => {
             <div className="flex items-center space-x-6">
               {isLandingPage ? (
                 <>
-                  <Link to="/login" className="font-medium text-jira-text hover:text-primary transition-colors">
-                    Log in
+                  <Link to="/signup" className="font-medium text-jira-text hover:text-primary transition-colors">
+                    Get started
                   </Link>
-                  <Link to="/signup">
-                    <Button>Get started</Button>
+                  <Link to="/login">
+                    <Button>Log in</Button>
                   </Link>
                 </>
               ) : (

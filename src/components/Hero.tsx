@@ -22,11 +22,6 @@ const Hero: React.FC = () => {
               The #1 project management tool for high-performance teams — clear visibility, efficient workflows, unlimited possibilities.
             </p>
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
-              <Link to="/signup">
-                <Button size="lg" className="w-full sm:w-auto bg-white text-primary hover:bg-white/90">
-                  Get it free
-                </Button>
-              </Link>
               <Link to="/login">
                 <Button 
                   size="lg" 
@@ -34,6 +29,11 @@ const Hero: React.FC = () => {
                   className="w-full sm:w-auto border-white/50 text-white hover:bg-white/20 hover:border-white/70"
                 >
                   Log in
+                </Button>
+              </Link>
+              <Link to="/signup">
+                <Button size="lg" className="w-full sm:w-auto bg-white text-primary hover:bg-white/90">
+                  Get started
                 </Button>
               </Link>
             </div>
