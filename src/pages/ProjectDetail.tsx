@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 import { Layout } from '@/components/Layout';
 import KanbanBoard from '@/components/KanbanBoard';
 import { toast } from '@/hooks/use-toast';
