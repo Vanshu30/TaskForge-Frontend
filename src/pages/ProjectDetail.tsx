@@ -54,13 +54,28 @@ const ProjectDetail = () => {
   }, [projectId]);
 
   const handleTaskDelete = (taskId: string) => {
-    if (!projectId || !taskId) {
-      console.error("Missing projectId or taskId for deletion");
+    if (!projectId) {
+      console.error("Missing projectId for task deletion");
+      toast({
+        title: "Error",
+        description: "Project ID is missing",
+        variant: "destructive"
+      });
       return;
     }
     
-    // Use setTimeout to prevent UI freeze by moving the operation off the main thread
-    setTimeout(() => {
+    if (!taskId) {
+      console.error("Missing taskId for deletion");
+      toast({
+        title: "Error",
+        description: "Task ID is missing",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Create a separate function to handle the deletion logic
+    const performTaskDeletion = () => {
       try {
         console.log("ProjectDetail - Handling task delete for taskId:", taskId);
         
@@ -95,7 +110,7 @@ const ProjectDetail = () => {
         Object.keys(updatedColumns).forEach(columnId => {
           updatedColumns[columnId] = {
             ...updatedColumns[columnId],
-            taskIds: updatedColumns[columnId].taskIds.filter(id => id !== taskId)
+            taskIds: updatedColumns[columnId].taskIds.filter((id: string) => id !== taskId)
           };
         });
         
@@ -124,7 +139,10 @@ const ProjectDetail = () => {
           variant: "destructive"
         });
       }
-    }, 0);
+    };
+    
+    // Use requestAnimationFrame instead of setTimeout to ensure smoother UI updates
+    requestAnimationFrame(performTaskDeletion);
   };
 
   if (loading) {
