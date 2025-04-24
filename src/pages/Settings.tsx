@@ -49,13 +49,10 @@ const Settings = () => {
   const [theme, setTheme] = useState('light');
   const [accentColor, setAccentColor] = useState('blue');
   const [defaultLayout, setDefaultLayout] = useState('full-page');
-  const [defaultSorting, setDefaultSorting] = useState('updated');
-  const [weekStartDay, setWeekStartDay] = useState('monday');
+  const [inlineCommentStyle, setInlineCommentStyle] = useState('stacked');
   const [highContrastMode, setHighContrastMode] = useState(false);
   const [largeText, setLargeText] = useState(false);
   const [defaultProject, setDefaultProject] = useState('none');
-  const [customKeyboardShortcuts, setCustomKeyboardShortcuts] = useState(true);
-  const [inlineCommentStyle, setInlineCommentStyle] = useState('stacked');
   const [languageFormat, setLanguageFormat] = useState('en-US');
 
   useEffect(() => {
@@ -99,9 +96,8 @@ const Settings = () => {
             <TabsList className="mb-6">
               <TabsTrigger value="appearance">Appearance</TabsTrigger>
               <TabsTrigger value="issueView">Issue View</TabsTrigger>
-              <TabsTrigger value="defaults">Defaults & Sorting</TabsTrigger>
               <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
-              <TabsTrigger value="shortcutsAndFormat">Shortcuts & Format</TabsTrigger>
+              <TabsTrigger value="shortcutsAndFormat">Language & Format</TabsTrigger>
             </TabsList>
             
             <TabsContent value="appearance">
@@ -279,102 +275,6 @@ const Settings = () => {
                 </Card>
               </div>
             </TabsContent>
-            
-            <TabsContent value="defaults">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Default Sorting and Filters</CardTitle>
-                    <CardDescription>Set your preferred default options</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="default-sorting">Default Sorting</Label>
-                      <Select value={defaultSorting} onValueChange={setDefaultSorting}>
-                        <SelectTrigger id="default-sorting">
-                          <SelectValue placeholder="Select default sorting" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="updated">Last Updated</SelectItem>
-                          <SelectItem value="created">Date Created</SelectItem>
-                          <SelectItem value="priority">Priority</SelectItem>
-                          <SelectItem value="due-date">Due Date</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="week-start">Week Starts On</Label>
-                      <Select value={weekStartDay} onValueChange={setWeekStartDay}>
-                        <SelectTrigger id="week-start">
-                          <SelectValue placeholder="Select week start day" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="monday">Monday</SelectItem>
-                          <SelectItem value="sunday">Sunday</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="saved-filters">Saved Filters</Label>
-                        <p className="text-sm text-muted-foreground">Show saved filters on sidebar</p>
-                      </div>
-                      <Switch id="saved-filters" defaultChecked />
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Default Project</CardTitle>
-                    <CardDescription>Set your default project on login</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="default-project">Default Project</Label>
-                      <Select value={defaultProject} onValueChange={setDefaultProject}>
-                        <SelectTrigger id="default-project">
-                          <SelectValue placeholder="Select default project" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None (Show Dashboard)</SelectItem>
-                          <SelectItem value="project-1">Website Redesign</SelectItem>
-                          <SelectItem value="project-2">Mobile App</SelectItem>
-                          <SelectItem value="project-3">API Integration</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        This project will be shown when you first log in
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Default Issue Activity Filter</Label>
-                      <RadioGroup defaultValue="all">
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="all" id="all-issues" />
-                          <Label htmlFor="all-issues">All issues</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="last-updated" id="last-updated" />
-                          <Label htmlFor="last-updated">Last updated</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="recently-commented" id="recently-commented" />
-                          <Label htmlFor="recently-commented">Recently commented</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="last-7-days" id="last-7-days" />
-                          <Label htmlFor="last-7-days">Opened in last 7 days</Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
 
             <TabsContent value="accessibility">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -470,53 +370,6 @@ const Settings = () => {
 
             <TabsContent value="shortcutsAndFormat">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Keyboard Shortcuts</CardTitle>
-                    <CardDescription>Configure keyboard shortcut settings</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="enable-shortcuts">Enable Keyboard Shortcuts</Label>
-                        <p className="text-sm text-muted-foreground">Use keyboard shortcuts to navigate</p>
-                      </div>
-                      <Switch 
-                        id="enable-shortcuts" 
-                        checked={customKeyboardShortcuts}
-                        onCheckedChange={setCustomKeyboardShortcuts}
-                      />
-                    </div>
-                    
-                    <div className="space-y-4 mt-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Create new issue</span>
-                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">c</code>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Search</span>
-                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">s</code>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Go to dashboard</span>
-                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">g d</code>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Go to issues</span>
-                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">g i</code>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Go to settings</span>
-                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">g s</code>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Toggle sidebar</span>
-                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">\</code>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
                 <Card>
                   <CardHeader>
                     <CardTitle>Language & Date Format</CardTitle>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -27,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
+import { ArrowLeft } from 'lucide-react';
 
 interface IssueFormData {
   title: string;
@@ -81,6 +81,18 @@ const Issues = () => {
         />
         
         <main className={`flex-1 p-4 md:p-6 ${isMobile ? 'w-full' : ''}`}>
+          <div className="flex items-center mb-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate(-1)} 
+              className="mr-2"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
+            <h1 className="text-2xl font-bold text-gray-900">Issues</h1>
+          </div>
+          
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Issues</h1>
