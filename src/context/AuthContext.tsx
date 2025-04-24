@@ -38,8 +38,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
+      
+      // For demo purposes, create a test user if no users exist
       const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
-      const user = storedUsers.find((u: any) => u.email === email && u.password === password);
+      
+      if (storedUsers.length === 0) {
+        // Create demo user
+        const demoUser = {
+          id: 'user-demo-1',
+          name: 'Demo User',
+          email: 'demo@example.com',
+          password: 'password123',
+          role: 'Admin' as UserRole,
+          organizationName: 'Demo Organization'
+        };
+        
+        localStorage.setItem('users', JSON.stringify([demoUser]));
+        console.log('Created demo user:', demoUser.email);
+      }
+      
+      // Try login with updated users list
+      const updatedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = updatedUsers.find((u: any) => u.email === email && u.password === password);
       
       if (!user) {
         throw new Error('Invalid credentials');
@@ -59,8 +79,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const hasSelectedPlan = localStorage.getItem('selectedPlan');
       navigate(hasSelectedPlan ? '/dashboard' : '/package-selection');
+      
     } catch (error) {
-      throw new Error('Login failed');
+      setUser(null);
+      throw error;
     } finally {
       setLoading(false);
     }

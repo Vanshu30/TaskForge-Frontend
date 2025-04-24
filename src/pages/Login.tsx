@@ -1,13 +1,17 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthForm, { LoginFormValues } from '@/components/AuthForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
 
   // If already authenticated, redirect to dashboard immediately
   React.useEffect(() => {
@@ -18,9 +22,21 @@ const Login = () => {
 
   const handleLogin = async (data: LoginFormValues) => {
     try {
+      setLoading(true);
       await login(data.email, data.password);
+      toast({
+        title: "Success",
+        description: "You have successfully logged in",
+      });
     } catch (error) {
       console.error("Login failed:", error);
+      toast({
+        title: "Login Failed",
+        description: "Invalid email or password. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,7 +80,7 @@ const Login = () => {
         <AuthForm
           type="login"
           onSubmit={handleLogin}
-          loading={false}
+          loading={loading}
         />
       </div>
     </div>
