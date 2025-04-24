@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Dialog, 
@@ -83,9 +82,6 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
   };
 
   const handleDelete = () => {
-    console.log("TaskDialog - Delete button clicked for task:", task?.id);
-    
-    // Validate task ID
     if (!task || !task.id) {
       console.error("TaskDialog - Cannot delete task: Missing task ID");
       toast({

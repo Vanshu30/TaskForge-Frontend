@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Dialog, 
@@ -21,6 +21,16 @@ import {
   SelectTrigger,
   SelectValue 
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/context/AuthContext';
 
@@ -52,6 +62,7 @@ const Issues = () => {
     const savedIssues = localStorage.getItem('issues');
     return savedIssues ? JSON.parse(savedIssues) : [];
   });
+  const [deleteIssueId, setDeleteIssueId] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -101,6 +112,25 @@ const Issues = () => {
       assignedTo: user?.name || '',
     });
     setIsDialogOpen(false);
+  };
+
+  const handleDeleteIssue = (issueId: string) => {
+    setDeleteIssueId(issueId);
+  };
+
+  const confirmDeleteIssue = () => {
+    if (!deleteIssueId) return;
+    
+    const updatedIssues = issues.filter(issue => issue.id !== deleteIssueId);
+    setIssues(updatedIssues);
+    localStorage.setItem('issues', JSON.stringify(updatedIssues));
+    
+    toast({
+      title: "Issue Deleted",
+      description: "The issue has been successfully removed",
+    });
+    
+    setDeleteIssueId(null);
   };
 
   return (
@@ -156,8 +186,19 @@ const Issues = () => {
                 </div>
               </div>
               <p className="mt-2 text-gray-700">{issue.description}</p>
-              <div className="mt-4 text-sm text-gray-500">
-                Assigned to: {issue.assignedTo}
+              <div className="mt-4 flex justify-between items-center">
+                <div className="text-sm text-gray-500">
+                  Assigned to: {issue.assignedTo}
+                </div>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={() => handleDeleteIssue(issue.id)}
+                  className="flex items-center gap-1"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
               </div>
             </div>
           ))}
@@ -250,6 +291,23 @@ const Issues = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteIssueId} onOpenChange={(open) => !open && setDeleteIssueId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Issue</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this issue? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteIssue} className="bg-red-500">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

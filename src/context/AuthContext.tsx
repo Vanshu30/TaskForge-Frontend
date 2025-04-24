@@ -61,7 +61,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Try login with updated users list
       const updatedUsers = JSON.parse(localStorage.getItem('users') || '[]');
-      const matchedUser = updatedUsers.find((u: any) => u.email === email && u.password === password);
+      const matchedUser = updatedUsers.find((u: any) => 
+        u.email.toLowerCase() === email.toLowerCase() && 
+        u.password === password
+      );
       
       if (!matchedUser) {
         console.error("No matching user found:", email);
@@ -86,7 +89,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!hasSelectedPlan) {
         localStorage.setItem('selectedPlan', 'pro');
       }
-      
     } catch (error) {
       console.error("Login error:", error);
       setUser(null);

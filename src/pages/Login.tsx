@@ -33,7 +33,9 @@ const Login = () => {
         title: "Success",
         description: "You have successfully logged in",
       });
-      navigate('/dashboard'); // Force navigation here in case context doesn't trigger it
+      
+      // Navigate after login is successful
+      navigate('/dashboard');
     } catch (error) {
       console.error("Login failed:", error);
       toast({
