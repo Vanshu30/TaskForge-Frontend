@@ -74,75 +74,70 @@ const ProjectDetail = () => {
       return;
     }
     
-    // Create a separate function to handle the deletion logic
-    const performTaskDeletion = () => {
-      try {
-        console.log("ProjectDetail - Handling task delete for taskId:", taskId);
-        
-        // Get current tasks and columns
-        const tasksKey = `tasks_${projectId}`;
-        const columnsKey = `columns_${projectId}`;
-        
-        const storedTasks = localStorage.getItem(tasksKey);
-        const storedColumns = localStorage.getItem(columnsKey);
-        
-        if (!storedTasks || !storedColumns) {
-          console.error("Could not find tasks or columns in local storage");
-          toast({
-            title: "Error",
-            description: "Could not find tasks or columns in storage",
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        const tasks = JSON.parse(storedTasks);
-        const columns = JSON.parse(storedColumns);
-        
-        // Remove the task from tasks object
-        const updatedTasks = { ...tasks };
-        delete updatedTasks[taskId];
-        
-        // Remove the task from all columns
-        const updatedColumns = { ...columns };
-        
-        // Update each column's taskIds array
-        Object.keys(updatedColumns).forEach(columnId => {
-          updatedColumns[columnId] = {
-            ...updatedColumns[columnId],
-            taskIds: updatedColumns[columnId].taskIds.filter((id: string) => id !== taskId)
-          };
-        });
-        
-        // Save updated tasks and columns to localStorage
-        localStorage.setItem(tasksKey, JSON.stringify(updatedTasks));
-        localStorage.setItem(columnsKey, JSON.stringify(updatedColumns));
-        
-        // Dispatch custom event to update the board
-        const deleteEvent = new CustomEvent('taskDelete', {
-          detail: { taskId, tasks: updatedTasks, columns: updatedColumns }
-        });
-        window.dispatchEvent(deleteEvent);
-        
-        console.log("Task deleted successfully");
-        
-        // Show success toast
-        toast({
-          title: "Task deleted",
-          description: "Task has been removed from the board"
-        });
-      } catch (error) {
-        console.error("Error deleting task:", error);
+    try {
+      console.log("ProjectDetail - Starting task deletion for taskId:", taskId);
+      
+      // Get current tasks and columns
+      const tasksKey = `tasks_${projectId}`;
+      const columnsKey = `columns_${projectId}`;
+      
+      const storedTasks = localStorage.getItem(tasksKey);
+      const storedColumns = localStorage.getItem(columnsKey);
+      
+      if (!storedTasks || !storedColumns) {
+        console.error("Could not find tasks or columns in local storage");
         toast({
           title: "Error",
-          description: "Could not delete task",
+          description: "Could not find tasks or columns in storage",
           variant: "destructive"
         });
+        return;
       }
-    };
-    
-    // Use requestAnimationFrame instead of setTimeout to ensure smoother UI updates
-    requestAnimationFrame(performTaskDeletion);
+      
+      const tasks = JSON.parse(storedTasks);
+      const columns = JSON.parse(storedColumns);
+      
+      // Remove the task from tasks object
+      const updatedTasks = { ...tasks };
+      delete updatedTasks[taskId];
+      
+      // Remove the task from all columns
+      const updatedColumns = { ...columns };
+      
+      // Update each column's taskIds array
+      Object.keys(updatedColumns).forEach(columnId => {
+        updatedColumns[columnId] = {
+          ...updatedColumns[columnId],
+          taskIds: updatedColumns[columnId].taskIds.filter((id: string) => id !== taskId)
+        };
+      });
+      
+      // Save updated tasks and columns to localStorage
+      localStorage.setItem(tasksKey, JSON.stringify(updatedTasks));
+      localStorage.setItem(columnsKey, JSON.stringify(updatedColumns));
+      
+      console.log("Task deleted successfully from storage");
+      
+      // Show success toast
+      toast({
+        title: "Task deleted",
+        description: "Task has been removed from the board"
+      });
+      
+      // Dispatch custom event to update the board
+      const deleteEvent = new CustomEvent('taskDelete', {
+        detail: { taskId, projectId }
+      });
+      window.dispatchEvent(deleteEvent);
+      
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      toast({
+        title: "Error",
+        description: "Could not delete task",
+        variant: "destructive"
+      });
+    }
   };
 
   if (loading) {

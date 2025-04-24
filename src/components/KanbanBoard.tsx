@@ -300,6 +300,7 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
   const loadBoardData = () => {
     if (!projectId) return;
     
+    console.log("Loading board data for project:", projectId);
     const storedTasks = localStorage.getItem(`tasks_${projectId}`);
     const storedColumns = localStorage.getItem(`columns_${projectId}`);
     const storedTeamMembers = localStorage.getItem(`team_${projectId}`);
@@ -323,20 +324,38 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
   };
 
   useEffect(() => {
-    const handleTaskEvent = () => {
+    const handleTaskUpdate = () => {
       loadBoardData();
     };
     
-    window.addEventListener('taskUpdate', handleTaskEvent);
-    window.addEventListener('taskAdd', handleTaskEvent);
-    window.addEventListener('taskDelete', handleTaskEvent);
-    
-    return () => {
-      window.removeEventListener('taskUpdate', handleTaskEvent);
-      window.removeEventListener('taskAdd', handleTaskEvent);
-      window.removeEventListener('taskDelete', handleTaskEvent);
+    const handleTaskAdd = () => {
+      loadBoardData();
     };
-  }, [projectId]);
+    
+    const handleTaskDelete = (event) => {
+      console.log("Task delete event received:", event.detail);
+      if (event.detail && event.detail.projectId === projectId) {
+        // If we have the deleted taskId and it matches the selected task, close the dialog
+        if (event.detail.taskId && selectedTask && selectedTask.id === event.detail.taskId) {
+          setSelectedTask(null);
+        }
+        // Reload data to reflect the deletion
+        loadBoardData();
+      }
+    };
+    
+    // Add event listeners
+    window.addEventListener('taskUpdate', handleTaskUpdate);
+    window.addEventListener('taskAdd', handleTaskAdd);
+    window.addEventListener('taskDelete', handleTaskDelete);
+    
+    // Clean up event listeners
+    return () => {
+      window.removeEventListener('taskUpdate', handleTaskUpdate);
+      window.removeEventListener('taskAdd', handleTaskAdd);
+      window.removeEventListener('taskDelete', handleTaskDelete);
+    };
+  }, [projectId, selectedTask]); // Added selectedTask as dependency to ensure correct behavior
 
   const handleDragEnd = (result) => {
     const { destination, source, draggableId } = result;
@@ -465,10 +484,12 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
     
     console.log("KanbanBoard - Delete task requested for ID:", taskId);
     
+    // Close the task dialog first if it's open for the task being deleted
     if (selectedTask && selectedTask.id === taskId) {
       setSelectedTask(null);
     }
     
+    // Call the parent component's onTaskDelete function
     if (onTaskDelete) {
       onTaskDelete(taskId);
     }
@@ -502,7 +523,7 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
               localStorage.setItem(`columns_${projectId}`, JSON.stringify(newColumns));
               
               const updateEvent = new CustomEvent('taskAdd', {
-                detail: { task, tasks: newTasks, columns: newColumns }
+                detail: { task, projectId }
               });
               window.dispatchEvent(updateEvent);
             }} 
