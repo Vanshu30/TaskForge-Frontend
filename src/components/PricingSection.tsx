@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check } from 'lucide-react';
@@ -17,6 +17,7 @@ interface PricingSectionProps {
   onSelectPlan?: (plan: PricingPlan) => void;
   selectedPlanId?: string;
   showYearlyPricing?: boolean;
+  showAllResponsive?: boolean;
 }
 
 const plans: PricingPlan[] = [
@@ -71,7 +72,10 @@ const PricingSection: React.FC<PricingSectionProps> = ({
   onSelectPlan,
   selectedPlanId,
   showYearlyPricing = false,
+  showAllResponsive = false,
 }) => {
+  const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
+
   return (
     <div className="py-16 bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto px-4">
@@ -86,9 +90,13 @@ const PricingSection: React.FC<PricingSectionProps> = ({
           {plans.map((plan) => (
             <Card
               key={plan.id}
-              className={`relative overflow-hidden ${
-                plan.isPopular ? 'border-primary shadow-lg scale-105' : ''
+              className={`relative overflow-hidden transition-all duration-300 ${
+                (selectedPlanId === plan.id || (showAllResponsive && hoveredPlan === plan.id)) 
+                  ? 'border-primary shadow-lg scale-105' 
+                  : 'hover:border-primary hover:shadow-lg hover:scale-105'
               }`}
+              onMouseEnter={() => setHoveredPlan(plan.id)}
+              onMouseLeave={() => setHoveredPlan(null)}
             >
               {plan.isPopular && (
                 <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-sm font-medium rounded-bl-lg">
