@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,7 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,13 +33,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-    setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
-      // Simulated authentication
       const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
       const user = storedUsers.find((u: any) => u.email === email && u.password === password);
       
@@ -60,14 +57,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
 
-      // Check if the user has selected a plan
       const hasSelectedPlan = localStorage.getItem('selectedPlan');
-      
-      if (!hasSelectedPlan) {
-        navigate('/package-selection');
-      } else {
-        navigate('/dashboard');
-      }
+      navigate(hasSelectedPlan ? '/dashboard' : '/package-selection');
     } catch (error) {
       throw new Error('Login failed');
     } finally {
@@ -99,10 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       storedUsers.push(newUser);
       localStorage.setItem('users', JSON.stringify(storedUsers));
 
-      // Login the user after successful signup
       await login(userData.email, userData.password);
-      
-      // Navigate to package selection
       navigate('/package-selection');
     } catch (error) {
       throw error;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthForm, { LoginFormValues } from '@/components/AuthForm';
@@ -6,11 +6,10 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
 const Login = () => {
-  const { login, isAuthenticated, loading } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // If already authenticated, redirect to dashboard
+  // If already authenticated, redirect to dashboard immediately
   React.useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard');
@@ -18,14 +17,11 @@ const Login = () => {
   }, [isAuthenticated, navigate]);
 
   const handleLogin = async (data: LoginFormValues) => {
-    console.info('Checking users in localStorage:', localStorage.getItem('users'));
-    setIsLoading(true);
-    await login(data.email, data.password);
-    setIsLoading(false);
-  };
-
-  const handleGoBack = () => {
-    navigate(-1);
+    try {
+      await login(data.email, data.password);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
 
   return (
@@ -36,7 +32,7 @@ const Login = () => {
             variant="outline" 
             size="icon" 
             className="mr-4" 
-            onClick={handleGoBack}
+            onClick={() => navigate(-1)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -68,7 +64,7 @@ const Login = () => {
         <AuthForm
           type="login"
           onSubmit={handleLogin}
-          loading={isLoading || loading}
+          loading={false}
         />
       </div>
     </div>
