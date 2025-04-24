@@ -15,41 +15,15 @@ import ProjectDetail from "./pages/ProjectDetail";
 import ProjectSettings from "./pages/ProjectSettings";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
-
 import Settings from "./pages/Settings";
 import Issues from "./pages/Issues";
 import Tasks from "./pages/Tasks";
 import Teams from "./pages/Teams";
+import PackageSelection from "./pages/PackageSelection";
 
 const queryClient = new QueryClient();
 
-const applyTheme = (theme: string) => {
-  const root = document.documentElement;
-  if (theme === "system") {
-    const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    root.classList.toggle("dark", isDark);
-    localStorage.setItem("theme", "system");
-  } else {
-    root.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
-  }
-};
-
 const App = () => {
-  useEffect(() => {
-    const storedTheme = localStorage.getItem("theme") || "light";
-    applyTheme(storedTheme);
-    if (storedTheme === "system") {
-      const handler = (e: MediaQueryListEvent) => {
-        applyTheme("system");
-      };
-      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", handler);
-      return () => {
-        window.matchMedia("(prefers-color-scheme: dark)").removeEventListener("change", handler);
-      };
-    }
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -61,12 +35,12 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/package-selection" element={<PackageSelection />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/projects/:projectId" element={<ProjectDetail />} />
               <Route path="/projects/:projectId/settings" element={<ProjectSettings />} />
               <Route path="/profile" element={<Profile />} />
-              
               <Route path="/settings" element={<Settings />} />
               <Route path="/issues" element={<Issues />} />
               <Route path="/tasks" element={<Tasks />} />

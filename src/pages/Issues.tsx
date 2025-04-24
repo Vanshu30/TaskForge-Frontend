@@ -1,241 +1,132 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
-import Header from '@/components/Header';
-import DashboardSidebar from '@/components/DashboardSidebar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Plus, Bug, CheckCircle, AlertCircle, Clock } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { useForm } from 'react-hook-form';
-import { toast } from '@/hooks/use-toast';
-import { ArrowLeft } from 'lucide-react';
 
-interface IssueFormData {
+import React, { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
+
+interface Issue {
+  id: string;
   title: string;
   description: string;
-  type: 'bug' | 'task' | 'story' | 'epic';
-  priority: 'lowest' | 'low' | 'medium' | 'high' | 'highest';
+  status: 'open' | 'in-progress' | 'resolved';
+  priority: 'low' | 'medium' | 'high';
+  assignee: string;
+  createdAt: string;
 }
 
+const demoIssues: Issue[] = [
+  {
+    id: '1',
+    title: 'Navigation menu not responsive on mobile',
+    description: 'The navigation menu is not properly adapting to mobile screen sizes.',
+    status: 'open',
+    priority: 'high',
+    assignee: 'John Doe',
+    createdAt: '2025-04-23',
+  },
+  {
+    id: '2',
+    title: 'Login form validation not working',
+    description: 'Form validation messages are not showing up when submitting invalid data.',
+    status: 'in-progress',
+    priority: 'medium',
+    assignee: 'Jane Smith',
+    createdAt: '2025-04-24',
+  },
+  {
+    id: '3',
+    title: 'Dashboard loading performance',
+    description: 'Dashboard takes too long to load on initial render.',
+    status: 'resolved',
+    priority: 'low',
+    assignee: 'Mike Johnson',
+    createdAt: '2025-04-24',
+  },
+];
+
 const Issues = () => {
-  const isMobile = useIsMobile();
-  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
-  const navigate = useNavigate();
-  const [issues, setIssues] = useState<any[]>([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  
-  const form = useForm<IssueFormData>({
-    defaultValues: {
-      title: '',
-      description: '',
-      type: 'task',
-      priority: 'medium',
+  const [issues] = useState<Issue[]>(demoIssues);
+
+  const getStatusBadge = (status: Issue['status']) => {
+    switch (status) {
+      case 'open':
+        return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />Open</Badge>;
+      case 'in-progress':
+        return <Badge variant="default"><Clock className="w-3 h-3 mr-1" />In Progress</Badge>;
+      case 'resolved':
+        return <Badge variant="outline"><CheckCircle className="w-3 h-3 mr-1" />Resolved</Badge>;
+      default:
+        return null;
     }
-  });
+  };
 
-  const handleAddIssue = (data: IssueFormData) => {
-    const newIssue = {
-      id: `issue-${Date.now()}`,
-      ...data,
-      createdAt: new Date().toISOString(),
-      status: 'open',
-    };
-
-    setIssues([...issues, newIssue]);
-    setDialogOpen(false);
-    form.reset();
-
-    toast({
-      title: "Issue created",
-      description: "Your issue has been successfully created",
-    });
+  const getPriorityColor = (priority: Issue['priority']) => {
+    switch (priority) {
+      case 'high':
+        return 'text-red-500';
+      case 'medium':
+        return 'text-yellow-500';
+      case 'low':
+        return 'text-green-500';
+      default:
+        return '';
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
-      
-      <div className="flex flex-1">
-        <DashboardSidebar 
-          isMobile={isMobile} 
-          isOpen={sidebarOpen} 
-          onToggle={() => setSidebarOpen(!sidebarOpen)} 
-        />
-        
-        <main className={`flex-1 p-4 md:p-6 ${isMobile ? 'w-full' : ''}`}>
-          <div className="flex items-center mb-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => navigate(-1)} 
-              className="mr-2"
-            >
-              <ArrowLeft className="h-6 w-6" />
-            </Button>
-            <h1 className="text-2xl font-bold text-gray-900">Issues</h1>
-          </div>
-          
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Issues</h1>
-              <p className="text-gray-600">Manage and track issues across your projects.</p>
-            </div>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="w-full md:w-auto" size="lg">
-                  <Plus className="mr-1" />
-                  Add New Issue
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle>Create New Issue</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={form.handleSubmit(handleAddIssue)} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Issue Title</Label>
-                    <Input 
-                      id="title" 
-                      placeholder="Enter issue title" 
-                      {...form.register('title', { required: true })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="type">Issue Type</Label>
-                    <Select 
-                      onValueChange={(value) => form.setValue('type', value as any)} 
-                      defaultValue={form.getValues('type')}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select issue type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="bug">
-                          <div className="flex items-center">
-                            <Bug className="h-4 w-4 mr-2 text-red-500" />
-                            Bug
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="task">
-                          <div className="flex items-center">
-                            <Clock className="h-4 w-4 mr-2 text-amber-500" />
-                            Task
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="story">
-                          <div className="flex items-center">
-                            <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                            Story
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="epic">
-                          <div className="flex items-center">
-                            <AlertCircle className="h-4 w-4 mr-2 text-purple-500" />
-                            Epic
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="priority">Priority</Label>
-                    <Select 
-                      onValueChange={(value) => form.setValue('priority', value as any)}
-                      defaultValue={form.getValues('priority')}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="highest">
-                          <div className="flex items-center">
-                            <span className="h-3 w-3 rounded-full bg-red-600 mr-2"></span>
-                            Highest
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="high">
-                          <div className="flex items-center">
-                            <span className="h-3 w-3 rounded-full bg-red-400 mr-2"></span>
-                            High
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="medium">
-                          <div className="flex items-center">
-                            <span className="h-3 w-3 rounded-full bg-yellow-500 mr-2"></span>
-                            Medium
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="low">
-                          <div className="flex items-center">
-                            <span className="h-3 w-3 rounded-full bg-green-400 mr-2"></span>
-                            Low
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="lowest">
-                          <div className="flex items-center">
-                            <span className="h-3 w-3 rounded-full bg-green-600 mr-2"></span>
-                            Lowest
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea 
-                      id="description" 
-                      placeholder="Describe the issue in detail" 
-                      {...form.register('description')}
-                      rows={5}
-                    />
-                  </div>
-                  
-                  <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit">
-                      Create Issue
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {issues.length === 0 ? (
-            <Card className="p-8 text-center">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No issues found</h3>
-              <p className="text-gray-500">Get started by creating your first issue.</p>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {/* Issue cards will be rendered here when we have issues */}
-            </div>
-          )}
-        </main>
+    <div className="container mx-auto py-8 px-4">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Issues</h1>
+          <p className="text-gray-600">Track and manage project issues</p>
+        </div>
+        <Button>New Issue</Button>
       </div>
+
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Issue</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Assignee</TableHead>
+                <TableHead>Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {issues.map((issue) => (
+                <TableRow key={issue.id} className="cursor-pointer hover:bg-gray-50">
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{issue.title}</div>
+                      <div className="text-sm text-gray-500">{issue.description}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{getStatusBadge(issue.status)}</TableCell>
+                  <TableCell>
+                    <span className={`font-medium ${getPriorityColor(issue.priority)}`}>
+                      {issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1)}
+                    </span>
+                  </TableCell>
+                  <TableCell>{issue.assignee}</TableCell>
+                  <TableCell>{issue.createdAt}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 };
