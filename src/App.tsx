@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -27,9 +28,9 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
-        <TooltipProvider>
-          <BrowserRouter>
-            <AuthProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <TooltipProvider>
               <Toaster />
               <Sonner />
               <Routes>
@@ -48,9 +49,9 @@ const App = () => {
                 <Route path="/teams" element={<Teams />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
+            </TooltipProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </HelmetProvider>
     </QueryClientProvider>
   );
