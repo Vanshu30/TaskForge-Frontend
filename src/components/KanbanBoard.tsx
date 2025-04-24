@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Button } from '@/components/ui/button';
@@ -415,6 +416,36 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
     window.dispatchEvent(updateEvent);
   };
 
+  const handleUpdateTask = (updatedTask) => {
+    if (!updatedTask || !updatedTask.id) {
+      console.error("KanbanBoard - Cannot update task: Invalid task data");
+      return;
+    }
+    
+    const updatedTasks = {
+      ...tasks,
+      [updatedTask.id]: updatedTask
+    };
+    
+    setTasks(updatedTasks);
+    localStorage.setItem(`tasks_${projectId}`, JSON.stringify(updatedTasks));
+    
+    // Update selected task in state if it's currently selected
+    if (selectedTask && selectedTask.id === updatedTask.id) {
+      setSelectedTask(updatedTask);
+    }
+    
+    const updateEvent = new CustomEvent('taskUpdate', {
+      detail: { type: 'update', taskId: updatedTask.id, tasks: updatedTasks }
+    });
+    window.dispatchEvent(updateEvent);
+    
+    toast({
+      title: "Task updated",
+      description: "Task has been updated successfully"
+    });
+  };
+
   const handleAddTeamMember = (newMember) => {
     const updatedTeamMembers = [...teamMembers, newMember];
     setTeamMembers(updatedTeamMembers);
@@ -547,6 +578,7 @@ const KanbanBoard = ({ projectId, onTaskDelete }) => {
           onClose={() => setSelectedTask(null)}
           onAddComment={handleAddComment}
           onDeleteTask={handleDeleteTask}
+          onUpdateTask={handleUpdateTask}
           teamMembers={teamMembers}
         />
       )}

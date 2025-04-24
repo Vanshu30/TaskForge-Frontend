@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
-import { Calendar, MessageSquare, Trash2, Bug, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { Calendar, MessageSquare, Trash2, Bug, CheckCircle, AlertCircle, Clock, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from '@/hooks/use-toast';
+import EditTaskDialog from './EditTaskDialog';
 
 interface TaskDialogProps {
   task: any;
@@ -31,6 +32,7 @@ interface TaskDialogProps {
   onClose: () => void;
   onAddComment: (taskId: string, comment: string) => void;
   onDeleteTask: (taskId: string) => void;
+  onUpdateTask?: (updatedTask: any) => void;
   teamMembers: any[];
 }
 
@@ -40,11 +42,13 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
   onClose, 
   onAddComment,
   onDeleteTask,
+  onUpdateTask,
   teamMembers 
 }) => {
   const [comment, setComment] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [localComments, setLocalComments] = useState(task?.comments || []);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
     // Update local comments when task.comments changes
@@ -114,6 +118,13 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
         description: "Failed to delete the task. Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleSaveTask = (updatedTask) => {
+    if (onUpdateTask) {
+      onUpdateTask(updatedTask);
+      setShowEditDialog(false);
     }
   };
 
@@ -240,14 +251,24 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
           </div>
           
           <DialogFooter>
-            <Button 
-              variant="destructive" 
-              onClick={() => setShowDeleteConfirm(true)}
-              className="flex items-center"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Task
-            </Button>
+            <div className="flex gap-2 w-full">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowEditDialog(true)}
+                className="flex items-center"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={() => setShowDeleteConfirm(true)}
+                className="flex items-center"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -268,6 +289,16 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {showEditDialog && (
+        <EditTaskDialog
+          task={task}
+          isOpen={showEditDialog}
+          onClose={() => setShowEditDialog(false)}
+          onSave={handleSaveTask}
+          teamMembers={teamMembers}
+        />
+      )}
     </>
   );
 };
