@@ -1,30 +1,20 @@
-import React, { useState } from 'react';
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import PasswordInput from "@/components/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserRole } from '@/context/AuthContext';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PasswordInput from "@/components/PasswordInput";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SignupFormValues, UserRole } from '@/context/AuthTypes';
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useState } from 'react';
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import ForgotPasswordDialog from "./ForgotPasswordDialog";
 
 export interface LoginFormValues {
   email: string;
   password: string;
-}
-
-export interface SignupFormValues {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  organizationId?: string;
-  organizationName?: string;
-  role: UserRole;
 }
 
 type AuthFormProps = {

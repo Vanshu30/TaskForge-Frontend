@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import DashboardSidebar from '@/components/DashboardSidebar';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Menu, ArrowLeft, Calendar, Filter, Bug, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -358,3 +358,4 @@ const Tasks = () => {
 };
 
 export default Tasks;
+

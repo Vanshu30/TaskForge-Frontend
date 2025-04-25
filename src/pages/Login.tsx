@@ -1,7 +1,7 @@
 import AuthForm, { LoginFormValues } from '@/components/AuthForm';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/context/AuthContext';
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';

@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import { Layout } from '@/components/Layout';
 import KanbanBoard from '@/components/KanbanBoard';
+import { Layout } from '@/components/Layout';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/context/AuthContext';
+import { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useParams } from 'react-router-dom';
 
 interface Task {
   id: string;
@@ -44,8 +44,8 @@ const ProjectDetail = () => {
     // Get project details from localStorage
     const projects = localStorage.getItem('projects');
     if (projects) {
-      const parsedProjects = JSON.parse(projects);
-      const foundProject = parsedProjects.find((p: any) => p.id === projectId);
+      const parsedProjects = JSON.parse(projects) as Project[];
+      const foundProject = parsedProjects.find((p: Project) => p.id === projectId);
       if (foundProject) {
         setProject(foundProject);
       }
@@ -166,7 +166,7 @@ const ProjectDetail = () => {
   return (
     <Layout>
       <Helmet>
-        <title>{project.name} | TaskFlow</title>
+        <title>{project.name} | TaskForge</title>
       </Helmet>
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -183,3 +183,4 @@ const ProjectDetail = () => {
 };
 
 export default ProjectDetail;
+

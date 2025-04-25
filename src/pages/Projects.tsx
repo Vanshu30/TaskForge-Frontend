@@ -1,15 +1,15 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
-import Header from '@/components/Header';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import Header from '@/components/Header';
 import ProjectsList from '@/components/ProjectsList';
-import { useAuth } from '@/context/AuthContext';
-import { Menu, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from '@/hooks/use-toast';
-
+import { useAuth } from '@/hooks/useAuth';
+import { createProject, getProjects } from "@/service/projects";
+import { ArrowLeft, Menu } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 interface Project {
   id: string;
   name: string;
@@ -29,29 +29,37 @@ const Projects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    const storedProjects = localStorage.getItem('projects');
-    if (storedProjects) {
-      setProjects(JSON.parse(storedProjects));
-    }
+    const fetchProjects = async () => {
+      try {
+        const data = await getProjects();
+        setProjects(data);
+      } catch (err) {
+        toast({ title: "Error", description: "Failed to load projects" });
+      }
+    };
+  
+    fetchProjects();
   }, []);
 
-  const handleAddProject = (project: Project) => {
-    console.log("Adding project:", project);
-    const updatedProjects = [...projects, project];
-    setProjects(updatedProjects);
-    localStorage.setItem('projects', JSON.stringify(updatedProjects));
-    
-    toast({
-      title: "Project created",
-      description: "Your new project has been created successfully."
-    });
-    
-    // Add a slight delay to ensure state has updated before navigation
-    setTimeout(() => {
-      console.log("Navigating to:", `/projects/${project.id}`);
-      navigate(`/projects/${project.id}`);
-    }, 200);
+  const handleAddProject = async (project: Project) => {
+    try {
+      const newProject = await createProject(project);
+      const updatedProjects = [...projects, newProject];
+      setProjects(updatedProjects);
+  
+      toast({
+        title: "Project created",
+        description: "Your new project has been created successfully.",
+      });
+  
+      setTimeout(() => {
+        navigate(`/projects/${newProject.id}`);
+      }, 200);
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to create project" });
+    }
   };
+  
 
   if (!user) {
     navigate('/login');
@@ -102,3 +110,4 @@ const Projects = () => {
 };
 
 export default Projects;
+

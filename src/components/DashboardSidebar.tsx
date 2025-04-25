@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import {
   CheckCircle,
   LayoutDashboard,
@@ -203,3 +203,4 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 };
 
 export default DashboardSidebar;
+

@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import DashboardSidebar from '@/components/DashboardSidebar';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Menu, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -79,3 +79,4 @@ const Calendar = () => {
 };
 
 export default Calendar;
+

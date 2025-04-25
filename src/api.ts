@@ -1,7 +1,13 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL= import.meta.env.VITE_API_BASE_URL;
 
 // Login
-export async function loginUser(credentials: { email: string, password: string }) {
+export async function loginUser(credentials: { 
+  email: string, 
+  password: string,
+  organizationId?: string,
+  organizationName?: string,
+  role?: string
+}) {
   const response = await fetch(`${API_BASE_URL}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -11,7 +17,17 @@ export async function loginUser(credentials: { email: string, password: string }
 }
 
 // Signup
-export async function signupUser(details: { name: string, email: string, password: string }) {
+export async function signupUser(details: { 
+  
+  name: string, 
+  
+  email: string, 
+  
+  password: string,
+  organizationId?: string,
+  organizationName?: string,
+  role: string
+}) {
   const response = await fetch(`${API_BASE_URL}/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -23,6 +39,7 @@ export async function signupUser(details: { name: string, email: string, passwor
 // Fetch Projects
 export async function getProjects() {
   const response = await fetch(`${API_BASE_URL}/projects`);
+  if (!response.ok) throw new Error("Failed to fetch projects");
   return response.json();
 }
 

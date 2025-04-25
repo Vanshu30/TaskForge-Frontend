@@ -5,7 +5,7 @@ import ProjectsList from '@/components/ProjectsList';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Folder, List, Menu } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -127,3 +127,4 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+

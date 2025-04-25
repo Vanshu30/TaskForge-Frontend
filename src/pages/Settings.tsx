@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import DashboardSidebar from '@/components/DashboardSidebar';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   Settings as SettingsIcon, 
   Sun, 
@@ -443,3 +443,4 @@ const Settings = () => {
 };
 
 export default Settings;
+
