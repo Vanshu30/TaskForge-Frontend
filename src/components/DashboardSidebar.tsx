@@ -1,22 +1,19 @@
 
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
 import {
-  CheckCircle,
-  LayoutDashboard,
-  Mail,
-  Settings,
-  Users,
-  X,
-  Menu,
+  AlertCircle,
+  Briefcase,
   ChevronLeft,
   ChevronRight,
-  Briefcase,
+  LayoutDashboard,
   ListOrdered,
-  AlertCircle,
+  Settings,
+  Users,
+  X
 } from 'lucide-react';
+import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface MenuItemProps {
   icon: React.ReactNode;
@@ -110,7 +107,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                   />
                 </svg>
               </div>
-              <span className="font-bold text-lg">TaskFlow</span>
+              <span className="font-bold text-lg">TaskForge</span>
             </div>
           )}
 
@@ -203,4 +200,3 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 };
 
 export default DashboardSidebar;
-

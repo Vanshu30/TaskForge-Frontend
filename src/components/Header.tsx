@@ -1,10 +1,10 @@
 
+import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuth';
+import { Menu, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, X } from 'lucide-react';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -38,7 +38,7 @@ const Header: React.FC = () => {
                 fill="white"
               />
             </svg>
-            <span className="text-xl font-bold text-jira-text">TaskFlow</span>
+            <span className="text-xl font-bold text-jira-text">TaskForge</span>
           </Link>
 
           {isMobile ? (
@@ -134,4 +134,3 @@ const Header: React.FC = () => {
 };
 
 export default Header;
-

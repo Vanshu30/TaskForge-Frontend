@@ -1,7 +1,7 @@
 
+import { Button } from '@/components/ui/button';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 
 const Hero: React.FC = () => {
   return (
@@ -46,7 +46,7 @@ const Hero: React.FC = () => {
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 shadow-2xl border border-white/20 animate-bounce-slow">
               <img 
                 src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80" 
-                alt="TaskFlow Dashboard" 
+                alt="TaskForge Dashboard" 
                 className="rounded w-full h-auto shadow-lg"
               />
             </div>

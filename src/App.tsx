@@ -1,26 +1,25 @@
 
-import { useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HelmetProvider } from 'react-helmet-async';
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
-import Projects from "./pages/Projects";
-import ProjectDetail from "./pages/ProjectDetail";
-import ProjectSettings from "./pages/ProjectSettings";
-import Profile from "./pages/Profile";
-import NotFound from "./pages/NotFound";
-import Settings from "./pages/Settings";
+import Index from "./pages/Index";
 import Issues from "./pages/Issues";
+import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
+import PackageSelection from "./pages/PackageSelection";
+import Profile from "./pages/Profile";
+import ProjectDetail from "./pages/ProjectDetail";
+import Projects from "./pages/Projects";
+import ProjectSettings from "./pages/ProjectSettings";
+import Settings from "./pages/Settings";
+import Signup from "./pages/Signup";
 import Tasks from "./pages/Tasks";
 import Teams from "./pages/Teams";
-import PackageSelection from "./pages/PackageSelection";
-import { HelmetProvider } from 'react-helmet-async';
 
 const queryClient = new QueryClient();
 
