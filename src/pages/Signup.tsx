@@ -1,6 +1,6 @@
 import AuthForm from '@/components/AuthForm';
 import { Button } from '@/components/ui/button';
-import { SignupFormValues } from '@/context/AuthContext';
+import { SignupFormValues } from '@/context/AuthTypes';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft } from 'lucide-react';
 import React, { useState } from 'react';

@@ -1,5 +1,5 @@
-import axios from 'axios';
+import axiosInstance from '../Utils/axiosInstance';
 
 export const fetchTaskById = (taskId: string) => {
-  return axios.get(`/api/tasks/${taskId}`);
+  return axiosInstance.get(`/api/tasks/${taskId}`);
 };
