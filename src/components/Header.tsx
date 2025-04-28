@@ -38,7 +38,8 @@ const Header: React.FC = () => {
                 fill="white"
               />
             </svg>
-            <span className="text-xl font-bold text-jira-text">TaskForge</span>
+
+            <span className="text-xl font-bold text-jira-text text-white">TaskForge</span>
           </Link>
 
           {isMobile ? (
@@ -105,7 +106,7 @@ const Header: React.FC = () => {
             <div className="flex items-center space-x-6">
               {isLandingPage ? (
                 <>
-                  <Link to="/login" className="font-medium text-jira-text hover:text-primary transition-colors">
+                  <Link to="/login" className="font-medium text-white hover:text-white transition-colors">
                     Log in
                   </Link>
                   <Link to="/signup">

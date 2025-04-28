@@ -7,9 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SignupFormValues, UserRole } from '@/context/AuthTypes';
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CircleArrowUp } from "lucide-react";
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import defaultLogo from "../assets/default-logo.png";
 import ForgotPasswordDialog from "./ForgotPasswordDialog";
 
 export interface LoginFormValues {
@@ -78,6 +80,13 @@ const AuthForm: React.FC<AuthFormProps> = ({
 
   const [orgIdAvailabilityMsg, setOrgIdAvailabilityMsg] = React.useState<{text: string, error: boolean} | null>(null);
   const [checkingOrgId, setCheckingOrgId] = React.useState(false);
+  const [companyLogo, setcompanyLogo] = useState(defaultLogo);
+
+  const handleImageUpload = (e) => {
+    e.preventDefault();
+    console.log(e.target.files);
+    setcompanyLogo(URL.createObjectURL(e.target.files[0]));
+  }
 
   const checkOrgIdAvailability = async (orgId: string) => {
     if (!orgId || orgId.length < 3) return;
@@ -96,7 +105,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" encType="multipart/form-data">
             {!isLogin && (
               <>
                 <Tabs value={signupType} onValueChange={(v) => setSignupType(v as 'new' | 'existing')}>
@@ -231,8 +240,37 @@ const AuthForm: React.FC<AuthFormProps> = ({
                     </FormItem>
                   )}
                 />
+
+                {signupType === 'new' ? (
+                <FormField
+                  control={form.control}
+                  name="organizationName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor="company-logo">Company Logo</FormLabel>
+                      <div className="relative w-20 h-20">
+                        <img src={companyLogo} alt="Company logo preview" className="w-20 h-20 rounded-full border-2 border-solid" />
+                        <CircleArrowUp className="absolute top-11 right-0 opacity-50 z-index:999" />
+                        <input 
+                          type="file" 
+                          id="company-logo" 
+                          onChange={handleImageUpload} 
+                          className="w-10 h-20 absolute top-11 right-0 z-index:99 opacity-0"
+                          aria-label="Upload company logo"
+                          title="Click to upload company logo"
+                          accept="image/*"
+                        />
+                      </div>
+                      
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : null}
               </>
             )}
+
+                
 
             {isLogin && (
               <>

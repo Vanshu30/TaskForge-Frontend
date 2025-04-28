@@ -5,9 +5,9 @@ import ProjectsList from '@/components/ProjectsList';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Folder, List, Menu } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { ChartColumnStacked, CircleFadingArrowUp, ClockArrowDown, Folder, FolderPlus, List, Menu } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 const Dashboard: React.FC = () => {
@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
           onToggle={toggleSidebar} 
         />
         
-        <main className={`flex-1 p-4 md:p-6 ${isMobile ? 'w-full' : ''}`}>
+        <main className={`flex-1 p-4 md:p-6 ${isMobile ? 'w-full' : 'max-w-7xl mx-auto'}`}>
           {isMobile && !sidebarOpen && (
             <Button 
               variant="outline" 
@@ -77,18 +77,61 @@ const Dashboard: React.FC = () => {
             <p className="text-gray-600">Here's what's happening in your workspace today.</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <Card 
               className="cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => navigate('/teams')}
             >
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Team Members</CardTitle>
-                <CardDescription>Active collaborators</CardDescription>
+                <div className="text-center">
+                <ChartColumnStacked className="h-12 w-12" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">8</div>
-                <p className="text-sm text-muted-foreground">3 new this month</p>
+              <CardTitle className="text-lg">1 Completed</CardTitle>
+              <CardDescription>In the last 7 days</CardDescription>
+              </CardContent>
+            </Card>
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => navigate('/teams')}
+            >
+              <CardHeader className="pb-2">
+                <div className="text-center">
+                <CircleFadingArrowUp className="h-12 w-12" />
+                </div>
+              </CardHeader>
+              <CardContent>
+              <CardTitle className="text-lg">1 Updated</CardTitle>
+              <CardDescription>In the last 3 days</CardDescription>
+              </CardContent>
+            </Card>
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => navigate('/teams')}
+            >
+              <CardHeader className="pb-2">
+                <div className="text-center">
+                <FolderPlus className="h-12 w-12" />
+                </div>
+              </CardHeader>
+              <CardContent>
+              <CardTitle className="text-lg">1 Created</CardTitle>
+              <CardDescription>In the last 2 days</CardDescription>
+              </CardContent>
+            </Card>
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => navigate('/teams')}
+            >
+              <CardHeader className="pb-2">
+                <div className="text-center">
+                <ClockArrowDown className="h-12 w-12" />
+                </div>
+              </CardHeader>
+              <CardContent>
+              <CardTitle className="text-lg">1 Due Soon</CardTitle>
+              <CardDescription>In the last 7 days</CardDescription>
               </CardContent>
             </Card>
           </div>
@@ -127,4 +170,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-

@@ -13,28 +13,29 @@ export async function apiRequest<T>(
   options: AxiosRequestConfig = {}
 ): Promise<T> {
   try {
-    const response = await axios({
+    const response = await axios<T>({
       url: `${BASE_URL}${endpoint}`,
-      ...options,
+      method: 'GET', // default method if none is provided
       headers: {
         'Content-Type': 'application/json',
-        ...(options.headers || {})
-      }
+        ...(options.headers || {}),
+      },
+      ...options,
     });
 
-    return response.data as T;
-  } catch (error) {
+    return response.data;
+  } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      const message =
-        typeof error.response?.data === 'object' && 'message' in error.response.data
-          ? (error.response.data as ApiErrorResponse).message
-          : error.message;
-
+      const errorData = error.response?.data as ApiErrorResponse | undefined;
+      const message = errorData?.message || error.message || 'API request failed';
       console.error('API Request Error:', message);
-      throw new Error(message || 'API request failed');
+      throw new Error(message);
+    } else if (error instanceof Error) {
+      console.error('API Request Error:', error.message);
+      throw new Error(error.message || 'API request failed');
+    } else {
+      console.error('API Request Error:', String(error));
+      throw new Error('API request failed');
     }
-
-    console.error('API Request Error:', error instanceof Error ? error.message : String(error));
-    throw new Error('API request failed');
   }
 }
