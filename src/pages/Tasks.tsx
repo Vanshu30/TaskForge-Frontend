@@ -1,14 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
-import Header from '@/components/Header';
 import DashboardSidebar from '@/components/DashboardSidebar';
-import { useAuth } from '@/hooks/useAuth';
-import { Menu, ArrowLeft, Calendar, Filter, Bug, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import Header from '@/components/Header';
+import TaskCard from '@/components/TaskCard';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import TaskCard from '@/components/TaskCard';
 import {
   Select,
   SelectContent,
@@ -16,7 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuth';
+import { AlertCircle, ArrowLeft, Bug, Calendar, CheckCircle, Clock, Filter, Menu } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import CreateTaskForm from '../components/CreateTaskForm';
 
 interface Task {
   id: string;
@@ -308,6 +309,10 @@ const Tasks = () => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold mb-2">Create New Task</h2>
+            <CreateTaskForm onTaskCreated={refreshAllTasks} />
           </div>
 
           <div className="mb-4">

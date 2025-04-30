@@ -1,32 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
-import Header from '@/components/Header';
 import DashboardSidebar from '@/components/DashboardSidebar';
-import { useAuth } from '@/hooks/useAuth';
-import { 
-  Settings as SettingsIcon, 
-  Sun, 
-  Moon, 
-  Check,
-  ArrowLeft,
-  Monitor
-} from 'lucide-react';
+import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  ArrowLeft,
+  Check,
+  Monitor,
+  Moon,
+  Sun
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const applyTheme = (theme: string) => {
   const root = document.documentElement;
@@ -181,26 +181,26 @@ const Settings = () => {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="default-fields">Default Fields</Label>
+                      <Label>Default Fields</Label>
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="field-description" className="rounded border-gray-300" defaultChecked />
+                          <Checkbox id="field-description" defaultChecked />
                           <Label htmlFor="field-description">Description</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="field-assignee" className="rounded border-gray-300" defaultChecked />
+                          <Checkbox id="field-assignee" defaultChecked />
                           <Label htmlFor="field-assignee">Assignee</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="field-due-date" className="rounded border-gray-300" defaultChecked />
+                          <Checkbox id="field-due-date" defaultChecked />
                           <Label htmlFor="field-due-date">Due Date</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="field-priority" className="rounded border-gray-300" defaultChecked />
+                          <Checkbox id="field-priority" defaultChecked />
                           <Label htmlFor="field-priority">Priority</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="field-progress" className="rounded border-gray-300" defaultChecked />
+                          <Checkbox id="field-progress" defaultChecked />
                           <Label htmlFor="field-progress">Progress</Label>
                         </div>
                       </div>
@@ -313,16 +313,18 @@ const Settings = () => {
                     <Separator />
                     
                     <div className="space-y-2">
-                      <Label>Text Scaling</Label>
+                      <Label htmlFor="text-scaling">Text Scaling</Label>
                       <div className="flex items-center">
                         <span className="text-sm pr-2">Small</span>
                         <input 
+                          id="text-scaling"
                           type="range" 
                           min="80" 
                           max="150" 
                           step="10" 
                           defaultValue="100"
                           className="w-full"
+                          aria-label="Text scaling adjustment"
                         />
                         <span className="text-sm pl-2">Large</span>
                       </div>
@@ -443,4 +445,3 @@ const Settings = () => {
 };
 
 export default Settings;
-

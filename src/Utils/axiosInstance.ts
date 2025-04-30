@@ -1,13 +1,16 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
+
+// Safely get API URL from environment, with a fallback
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'; 
 
 const axiosInstance = axios.create({
-  baseURL: 'https://taskforge-backend.onrender.com',
+  baseURL: apiUrl,
 });
 
 // Add the token to every request (if present)
 axiosInstance.interceptors.request.use(
-  (config: AxiosRequestConfig) => {
-    const token = localStorage.getItem('token'); // Or sessionStorage
+  (config) => {
+    const token = localStorage.getItem('token');
     if (token && config.headers) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }

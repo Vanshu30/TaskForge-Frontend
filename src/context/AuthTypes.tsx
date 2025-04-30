@@ -9,6 +9,13 @@ export interface User {
   role: UserRole;
   organizationId?: string;
   organizationName?: string;
+  companyId?: string; // Added for compatibility with API endpoints
+}
+
+export interface LoginFormValues {
+  email: string;
+  password: string;
+  companyId?: string; // Added for compatibility with API endpoints
 }
 
 export interface SignupFormValues {

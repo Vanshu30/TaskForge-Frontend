@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -47,7 +46,7 @@ const Hero: React.FC = () => {
               <img 
                 src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80" 
                 alt="TaskForge Dashboard" 
-                className="rounded w-full h-auto shadow-lg"
+                className="rounded w-10 h-10 shadow-lg"
               />
             </div>
             <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-accent rounded-full flex items-center justify-center text-white font-bold shadow-lg">

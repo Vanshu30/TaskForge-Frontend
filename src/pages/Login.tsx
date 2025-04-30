@@ -1,50 +1,40 @@
 import AuthForm, { LoginFormValues } from '@/components/AuthForm';
 import { Button } from '@/components/ui/button';
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft } from 'lucide-react';
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const { login, isAuthenticated } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
 
-  // If already authenticated, redirect to dashboard immediately
-  React.useEffect(() => {
+  // If already authenticated, redirect to dashboard
+  useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard');
     }
   }, [isAuthenticated, navigate]);
 
   const handleLogin = async (data: LoginFormValues) => {
+    console.info('Attempting login with:', data);
+
+    setIsLoading(true);
     try {
-      setLoading(true);
-      // Use demo credentials if fields are empty for easier testing
-      const email = data.email || "demo@example.com";
-      const password = data.password || "password123";
-      
-      await login(email, password);
-      
-      toast({
-        title: "Success",
-        description: "You have successfully logged in",
-      });
-      
-      // Navigate after login is successful
-      navigate('/dashboard');
+      await login(data.email, data.password);
+      console.log("Login success! Redirecting to dashboard...");
+      navigate('/dashboard'); // Redirect to dashboard after login
     } catch (error) {
       console.error("Login failed:", error);
-      toast({
-        title: "Login Failed",
-        description: "Invalid email or password. Please try again.",
-        variant: "destructive",
-      });
+      alert("Login failed. Please check your credentials.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
+  };
+
+  const handleGoBack = () => {
+    navigate(-1);
   };
 
   return (
@@ -55,7 +45,7 @@ const Login = () => {
             variant="outline" 
             size="icon" 
             className="mr-4" 
-            onClick={() => navigate(-1)}
+            onClick={handleGoBack}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -76,18 +66,18 @@ const Login = () => {
               />
             </svg>
             <h2 className="mt-2 text-3xl font-extrabold text-gray-900">
-              Sign in to TaskForge
+              Sign in to your account
             </h2>
             <p className="mt-2 text-sm text-gray-500">
-              Manage your projects efficiently and collaborate with your team
+              Welcome back! Please enter your details to continue.
             </p>
           </div>
         </div>
-        
+
         <AuthForm
           type="login"
           onSubmit={handleLogin}
-          loading={loading}
+          loading={isLoading}
         />
       </div>
     </div>

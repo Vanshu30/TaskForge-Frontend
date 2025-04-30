@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { loginUser, signupUser } from '../api';
 import { AuthContext, SignupFormValues, User } from './AuthTypes';
 
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
 const [loading, setLoading] = useState<boolean>(false);
@@ -17,16 +18,16 @@ useEffect(() => {
 
 const login = async (email: string, password: string) => {
     try {
-    setLoading(true);
+      setLoading(true);
       // Include a default role to satisfy the loginUser function requirements
       const response = await loginUser({ email, password, role: "Viewer" }); // 🔁 Connect to backend
-    setUser(response.user || response);
-    localStorage.setItem('user', JSON.stringify(response.user || response));
+      setUser(response.user);
+      localStorage.setItem('user', JSON.stringify(response.user));
     } catch (error) {
-    setUser(null);
-    throw error;
+      setUser(null);
+      throw error;
     } finally {
-    setLoading(false);
+      setLoading(false);
     }
 };
 
@@ -44,8 +45,8 @@ const logout = () => {
       const { name, email, password, organizationId, organizationName, role } = userData;
       const signupData = { name, email, password, organizationId, organizationName, role };
       const response = await signupUser(signupData); // 🔁 Connect to backend
-      setUser(response.user || response);
-      localStorage.setItem('user', JSON.stringify(response.user || response));
+      setUser(response.user);
+      localStorage.setItem('user', JSON.stringify(response.user));
       navigate('/package-selection'); // or '/dashboard'
     } finally {
       setLoading(false);

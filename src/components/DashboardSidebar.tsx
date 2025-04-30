@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import {
   AlertCircle,
   Briefcase,

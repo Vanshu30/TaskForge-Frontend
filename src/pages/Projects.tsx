@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus, Clock, Users } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Clock, Plus, Search, Users } from 'lucide-react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 interface Project {
   id: string;
@@ -21,22 +20,59 @@ interface Project {
   tags: string[];
 }
 
-interface ProjectsListProps {
-  projects: Project[];
-  onAddProject: (project: Project) => void;
+interface ProjectsProps {
+  projects?: Project[];
+  onAddProject?: (project: Project) => void;
 }
 
-const ProjectsList: React.FC<ProjectsListProps> = ({ projects = [], onAddProject }) => {
+const Projects: React.FC<ProjectsProps> = ({ projects: propProjects = [], onAddProject }) => {
+  const [localProjects, setLocalProjects] = useState<Project[]>([
+    // Default sample projects if none provided
+    {
+      id: 'project-1',
+      name: 'Website Redesign',
+      description: 'Redesign the company website with modern UI/UX principles',
+      status: 'active',
+      lastUpdated: new Date().toISOString(),
+      teamSize: 3,
+      tags: ['Design', 'Frontend'],
+    },
+    {
+      id: 'project-2',
+      name: 'Mobile App Development',
+      description: 'Create a mobile app for our customers',
+      status: 'on-hold',
+      lastUpdated: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      teamSize: 5,
+      tags: ['Mobile', 'React Native'],
+    },
+  ]);
+  
+  // Use provided projects if available, otherwise use local state
+  const projectsToDisplay = propProjects.length > 0 ? propProjects : localProjects;
+  
+  // Default implementation for onAddProject if not provided
+  const handleAddProject = onAddProject || ((project: Project) => {
+    console.log('New project added:', project);
+    setLocalProjects(prev => [...prev, project]);
+  });
+  
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredProjects = projects.filter(project =>
+  const filteredProjects = projectsToDisplay.filter(project =>
     project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     project.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const form = useForm({
+  interface ProjectFormValues {
+    name: string;
+    description: string;
+    status: 'active' | 'completed' | 'on-hold';
+  }
+
+  const form = useForm<ProjectFormValues>({
     defaultValues: {
       name: '',
       description: '',
@@ -44,9 +80,9 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects = [], onAddProject
     },
   });
 
-  const handleSubmit = (data) => {
+  const handleSubmit = (data: ProjectFormValues) => {
     const newProject: Project = {
-      id: project-${Date.now()},
+      id: `project-${Date.now()}`,
       name: data.name,
       description: data.description,
       status: 'active',
@@ -55,7 +91,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects = [], onAddProject
       tags: ['New'],
     };
 
-    onAddProject(newProject);
+    handleAddProject(newProject);
     setOpen(false);
     form.reset();
   };
@@ -63,10 +99,10 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects = [], onAddProject
   const handleProjectClick = (projectId: string) => {
     console.log("Navigating to project:", projectId);
     try {
-      navigate(/projects/${projectId});
+      navigate(`/projects/${projectId}`);
     } catch (error) {
       console.error("Navigation error:", error);
-      window.location.href = /projects/${projectId};
+      window.location.href = `/projects/${projectId}`;
     }
   };
 
@@ -143,7 +179,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects = [], onAddProject
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                   <CardTitle className="text-lg">{project.name}</CardTitle>
-                  <Badge className={${getStatusColor(project.status)}}>
+                  <Badge className={getStatusColor(project.status)}>
                     {project.status}
                   </Badge>
                 </div>
@@ -189,4 +225,4 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects = [], onAddProject
   );
 };
 
-export default ProjectsList;
+export default Projects;

@@ -1,4 +1,7 @@
-// This file exports types and context for backward compatibility
+// Export both the context and the AuthProvider
+// Export both the context and the AuthProvider
 export {
-    AuthContext, type AuthContextType, type SignupFormValues, type User, type UserRole
-} from './AuthTypes';
+    AuthContext,
+    type AuthContextType
+} from './AuthContext'; // ✅ correct file that defines and provides context
+  

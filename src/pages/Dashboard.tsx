@@ -4,12 +4,30 @@ import Header from '@/components/Header';
 import ProjectsList from '@/components/ProjectsList';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
-import { ChartColumnStacked, CircleFadingArrowUp, ClockArrowDown, Folder, FolderPlus, List, Menu } from 'lucide-react';
+import axios from 'axios';
+import { ChartColumnStacked, CircleFadingArrowUp, ClockArrowDown, Folder, FolderPlus, Link2, List, Mail, Menu, Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+// Import the Project interface
+interface Project {
+  id: string;
+  name: string;
+  description: string;
+  status: 'active' | 'completed' | 'on-hold';
+  lastUpdated: string;
+  teamSize: number;
+  tags: string[];
+}
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -18,7 +36,7 @@ const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('tasks');
 
   // Placeholder data - you'll want to replace these with actual data from your context or API
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
 
@@ -28,11 +46,34 @@ const Dashboard: React.FC = () => {
   
   useEffect(() => {
     getProjects().then(data => {
-      setProjects(data);
+      // Ensure data is treated as Project[]
+      setProjects(data as Project[]);
     }).catch(err => {
       console.error('Failed to load projects:', err);
     });
   }, []);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("/api/projects", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setProjects(response.data);
+      } catch (error) {
+        console.error("Failed to load projects", error);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+  const handleDelete = (id: string) => {
+    setProjects((prev) => prev.filter((project) => project.id !== id));
+  };
+
 
   useEffect(() => {
     if (!user) {
@@ -77,6 +118,34 @@ const Dashboard: React.FC = () => {
             <p className="text-gray-600">Here's what's happening in your workspace today.</p>
           </div>
           
+          <div className="flex justify-end mb-6">
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button className="flex items-center gap-2">
+        <Plus size={16} />
+        Invite
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuItem onClick={() => navigate('/invite')} className="flex items-center gap-2">
+        <Mail size={16} />
+        Invite by Email
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => navigate('/generate-invite-link')} className="flex items-center gap-2">
+        <Link2 size={16} />
+        Generate Invite Link
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+</div>
+<div className="flex justify-end mb-6">
+  <Button onClick={() => navigate('/create-project')} className="flex items-center gap-2">
+    <Plus size={16} />
+    New Project
+  </Button>
+</div>
+
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <Card 
               className="cursor-pointer hover:shadow-md transition-shadow"
@@ -154,14 +223,15 @@ const Dashboard: React.FC = () => {
               </div>
             </TabsContent>
             <TabsContent value="projects">
-              <ProjectsList 
-                projects={projects} 
-                onAddProject={(newProject) => {
-                  // Implement project addition logic
-                  setProjects([...projects, newProject]);
-                }} 
-              />
-            </TabsContent>
+  <div className="p-4">
+    <h1 className="text-2xl font-bold mb-4">My Projects</h1>
+    <ProjectsList 
+      projects={projects}
+      onDelete={(id) => setProjects(projects.filter((p) => p.id !== id))}
+    />
+  </div>
+</TabsContent>
+
           </Tabs>
         </main>
       </div>

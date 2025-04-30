@@ -1,9 +1,9 @@
-import AuthForm from '@/components/AuthForm';
+import AuthForm, { LoginFormValues } from '@/components/AuthForm';
 import { Button } from '@/components/ui/button';
 import { SignupFormValues } from '@/context/AuthTypes';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft } from 'lucide-react';
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
@@ -12,19 +12,28 @@ const Signup = () => {
   const navigate = useNavigate();
 
   // If already authenticated, redirect to dashboard
-  React.useEffect(() => {
+  useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard');
     }
   }, [isAuthenticated, navigate]);
 
-  const handleSignup = async (data: SignupFormValues) => {
+  const handleSignup = async (data: SignupFormValues | LoginFormValues) => {
     console.info('localStorage before signup:', Object.keys(localStorage));
     console.info('Raw users before signup:', localStorage.getItem('users'));
-    
+
     setIsLoading(true);
-    await signup(data);
-    setIsLoading(false);
+    try {
+      await signup(data as SignupFormValues); // Cast correctly
+      console.log("Signup success! Redirecting...");
+      navigate('/login'); // Redirect to login after successful signup
+    } catch (error) {
+      console.error("Signup failed:", error);
+      // Optional: Show toast or alert
+      alert("Signup failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoBack = () => {

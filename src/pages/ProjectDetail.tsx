@@ -1,8 +1,9 @@
 
 import KanbanBoard from '@/components/KanbanBoard';
 import { Layout } from '@/components/Layout';
-import { useAuth } from '@/hooks/useAuth';
+import TaskManager from "@/components/TaskManager";
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
@@ -178,6 +179,10 @@ const ProjectDetail = () => {
         projectId={projectId} 
         onTaskDelete={handleTaskDelete}
       />
+      <TaskManager 
+  projectId={projectId!} 
+  token={user?.token || ""}
+/>
     </Layout>
   );
 };
