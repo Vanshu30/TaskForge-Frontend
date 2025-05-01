@@ -1,236 +1,225 @@
-
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, AlertTriangle } from 'lucide-react';
-import { format } from 'date-fns';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { toast } from '@/hooks/use-toast';
-import EditTaskDialog from './EditTaskDialog';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  LinearProgress,
+  Link,
+  List,
+  ListItem,
+  MenuItem,
+  TextField,
+  Typography,
+} from "@mui/material";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 interface TaskDialogProps {
-  task: any;
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
-  onAddComment: (taskId: string, comment: string) => void;
-  onDeleteTask: (taskId: string) => void;
-  onUpdateTask: (task: any) => void;
-  teamMembers?: {id: string; name: string; email: string}[];
+  taskId?: string;
 }
 
-const TaskDialog = ({ 
-  task, 
-  isOpen, 
-  onClose, 
-  onAddComment, 
-  onDeleteTask,
-  onUpdateTask,
-  teamMembers = []
-}: TaskDialogProps) => {
-  const [comment, setComment] = useState('');
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+type TaskData = {
+  title: string;
+  status: "TODO" | "IN_PROGRESS" | "DONE";
+};
 
-  const handleAddComment = () => {
-    if (comment.trim()) {
-      onAddComment(task.id, comment);
-      setComment('');
-    }
-  };
+type FileData = {
+  id: string;
+  name: string;
+  url: string;
+};
 
-  const handleDelete = () => {
-    // Close the confirmation dialog first
-    setDeleteConfirmOpen(false);
-    
-    // Then close the task dialog
-    onClose();
-    
-    // Finally, trigger the delete action after UI updates
-    setTimeout(() => {
-      onDeleteTask(task.id);
-      
-      toast({
-        title: "Task deleted",
-        description: "Task has been removed from the board"
+type Comment = {
+  id: string;
+  content: string;
+};
+
+type Subtask = {
+  id: string;
+  title: string;
+  status: "TODO" | "IN_PROGRESS" | "DONE";
+};
+
+export default function TaskDialog({ open, onClose, taskId }: TaskDialogProps) {
+  const { register, handleSubmit, reset, setValue } = useForm<TaskData>();
+  const [loading, setLoading] = useState(false);
+  const [files, setFiles] = useState<FileData[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+
+  useEffect(() => {
+    if (taskId) {
+      setLoading(true);
+      axios.get(`/api/tasks/${taskId}`).then(res => {
+        const task = res.data;
+        setValue("title", task.title);
+        setValue("status", task.status);
+        setLoading(false);
       });
-    }, 100);
+
+      axios.get(`/api/tasks/${taskId}/files`).then(res => {
+        setFiles(res.data.files);
+      });
+
+      axios.get(`/api/tasks/${taskId}/comments`).then(res => {
+        setComments(res.data.comments);
+      });
+
+      axios.get(`/api/tasks/${taskId}/subtasks`).then(res => {
+        setSubtasks(res.data.subtasks);
+      });
+    } else {
+      reset();
+      setFiles([]);
+      setComments([]);
+      setSubtasks([]);
+    }
+  }, [taskId, setValue, reset]);
+
+  const onSubmit = async (data: TaskData) => {
+    if (!taskId) return;
+    setLoading(true);
+    await axios.put(`/api/tasks/${taskId}`, data);
+    setLoading(false);
+    onClose();
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'low':
-        return 'bg-green-100 text-green-800';
-      case 'medium':
-        return 'bg-blue-100 text-blue-800';
-      case 'high':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  const postComment = async () => {
+    if (!newComment.trim()) return;
+    const res = await axios.post(`/api/tasks/${taskId}/comments`, { content: newComment });
+    setComments([...comments, res.data.comment]);
+    setNewComment("");
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'bug':
-        return <div className="h-4 w-4 rounded-full bg-red-500" title="Bug"></div>;
-      case 'feature':
-        return <div className="h-4 w-4 rounded-full bg-green-500" title="Feature"></div>;
-      case 'enhancement':
-        return <div className="h-4 w-4 rounded-full bg-blue-500" title="Enhancement"></div>;
-      default:
-        return <div className="h-4 w-4 rounded-full bg-amber-500" title="Task"></div>;
-    }
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !taskId) return;
+    const formData = new FormData();
+    Array.from(e.target.files).forEach(file => {
+      formData.append("file", file);
+    });
+
+    setUploading(true);
+    const res = await axios.post(`/api/tasks/${taskId}/files`, formData);
+    setFiles(prev => [...prev, ...res.data.files]);
+    setUploading(false);
+  };
+
+  const createSubtask = async () => {
+    if (!newSubtaskTitle.trim() || !taskId) return;
+    const res = await axios.post(`/api/tasks`, {
+      title: newSubtaskTitle,
+      status: "TODO",
+      parentId: taskId,
+    });
+    setSubtasks([...subtasks, res.data.task]);
+    setNewSubtaskTitle("");
   };
 
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              {getTypeIcon(task.type)}
-              {task.title}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <ScrollArea className="max-h-[70vh]">
-            <div className="space-y-4 p-1">
-              {/* Task metadata */}
-              <div className="flex flex-wrap gap-2 items-center mb-4">
-                <Badge className={getPriorityColor(task.priority)}>
-                  {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
-                </Badge>
-                
-                {task.dueDate && (
-                  <Badge variant="outline" className="flex items-center">
-                    <Calendar className="h-3 w-3 mr-1" />
-                    {format(new Date(task.dueDate), 'MMM dd, yyyy')}
-                  </Badge>
-                )}
-                
-                <Badge variant="outline" className="ml-auto">
-                  {task.type.charAt(0).toUpperCase() + task.type.slice(1)}
-                </Badge>
-              </div>
-              
-              {/* Task description */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Description</h3>
-                <p className="text-gray-800 whitespace-pre-wrap">
-                  {task.description || "No description provided."}
-                </p>
-              </div>
-              
-              {/* Assignee */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Assignee</h3>
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-2">
-                    {task.assignee?.name ? task.assignee.name.charAt(0) : "?"}
-                  </div>
-                  <span>{task.assignee?.name || "Unassigned"}</span>
-                </div>
-              </div>
-              
-              {/* Comments section */}
-              <div className="mt-6">
-                <h3 className="text-sm font-medium text-gray-500 mb-3">Comments</h3>
-                
-                {task.comments && task.comments.length > 0 ? (
-                  <div className="space-y-4">
-                    {task.comments.map((comment) => (
-                      <div key={comment.id} className="bg-gray-50 p-3 rounded-md">
-                        <div className="flex items-center mb-2">
-                          <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-2">
-                            {comment.user ? comment.user.charAt(0) : "?"}
-                          </div>
-                          <span className="font-medium">{comment.user || "Unknown user"}</span>
-                          <span className="text-gray-400 text-xs ml-auto">
-                            {comment.timestamp ? format(new Date(comment.timestamp), 'MMM dd, h:mm a') : "No date"}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-700">{comment.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500">No comments yet.</p>
-                )}
-                
-                {/* Add comment */}
-                <div className="mt-4 flex">
-                  <Input
-                    placeholder="Add a comment..."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button 
-                    variant="outline" 
-                    onClick={handleAddComment}
-                    className="ml-2"
-                    disabled={!comment.trim()}
-                  >
-                    Comment
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </ScrollArea>
-          
-          <div className="mt-4 flex justify-between">
-            <Button variant="secondary" onClick={() => setEditDialogOpen(true)}>
-              Edit Task
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={() => setDeleteConfirmOpen(true)}
-            >
-              Delete Task
-            </Button>
+    <Dialog open={open} onClose={onClose} fullWidth>
+      <DialogTitle>{taskId ? "Edit Task" : "New Task"}</DialogTitle>
+
+      <DialogContent>
+        {loading && <LinearProgress />}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <TextField
+            label="Title"
+            fullWidth
+            margin="normal"
+            {...register("title", { required: true })}
+          />
+
+          <TextField
+            select
+            label="Status"
+            fullWidth
+            margin="normal"
+            defaultValue="TODO"
+            {...register("status", { required: true })}
+          >
+            <MenuItem value="TODO">To Do</MenuItem>
+            <MenuItem value="IN_PROGRESS">In Progress</MenuItem>
+            <MenuItem value="DONE">Done</MenuItem>
+          </TextField>
+
+          <div style={{ marginTop: "1rem" }}>
+            <Typography variant="subtitle1">Attach Files</Typography>
+            <input type="file" multiple onChange={handleFileUpload} />
+            {uploading && <LinearProgress />}
           </div>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Delete confirmation dialog */}
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center">
-              <AlertTriangle className="mr-2 h-5 w-5 text-red-500" />
-              Delete Task
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this task? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              className="bg-red-500 hover:bg-red-600"
-              onClick={handleDelete}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
-      {/* Edit task dialog */}
-      {editDialogOpen && (
-        <EditTaskDialog
-          task={task}
-          isOpen={editDialogOpen}
-          onClose={() => setEditDialogOpen(false)}
-          onSave={onUpdateTask}
-          teamMembers={teamMembers}
-        />
-      )}
-    </>
+          {files.length > 0 && (
+            <List>
+              {files.map((file) => (
+                <ListItem key={file.id}>
+                  <Link href={file.url} target="_blank" rel="noopener noreferrer">
+                    {file.name}
+                  </Link>
+                  <Button
+                    size="small"
+                    onClick={async () => {
+                      await axios.delete(`/api/files/${file.id}`);
+                      setFiles(files.filter((f) => f.id !== file.id));
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </ListItem>
+              ))}
+            </List>
+          )}
+
+          <div style={{ marginTop: "2rem" }}>
+            <Typography variant="h6">Comments</Typography>
+            <List>
+              {comments.map((c) => (
+                <ListItem key={c.id}>{c.content}</ListItem>
+              ))}
+            </List>
+            <TextField
+              fullWidth
+              placeholder="Write a comment..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && postComment()}
+              margin="normal"
+            />
+          </div>
+
+          <div style={{ marginTop: "2rem" }}>
+            <Typography variant="h6">Subtasks</Typography>
+            <List>
+              {subtasks.map((sub) => (
+                <ListItem key={sub.id}>
+                  {sub.title} ({sub.status})
+                </ListItem>
+              ))}
+            </List>
+            <TextField
+              fullWidth
+              placeholder="New subtask title"
+              value={newSubtaskTitle}
+              onChange={(e) => setNewSubtaskTitle(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && createSubtask()}
+              margin="normal"
+            />
+          </div>
+
+          <DialogActions>
+            <Button onClick={onClose}>Cancel</Button>
+            <Button type="submit" variant="contained" disabled={loading}>
+              Save
+            </Button>
+          </DialogActions>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
-};
-
-export default TaskDialog;
+}

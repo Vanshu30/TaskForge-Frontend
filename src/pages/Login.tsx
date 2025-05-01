@@ -22,9 +22,9 @@ const Login = () => {
 
     setIsLoading(true);
     try {
-      await login(data.email, data.password);
+      await login({ email: data.email, password: data.password });
       console.log("Login success! Redirecting to dashboard...");
-      navigate('/dashboard'); // Redirect to dashboard after login
+      // The navigation is handled in the login function, so we don't need to navigate here
     } catch (error) {
       console.error("Login failed:", error);
       alert("Login failed. Please check your credentials.");

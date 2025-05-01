@@ -1,8 +1,10 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API = axios.create({
-  baseURL: 'https://taskforge-backend-pdg6.onrender.com',
-  withCredentials: true, 
+const instance = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-export default API;
+export default instance;

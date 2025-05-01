@@ -1,71 +1,38 @@
-import { verifyToken } from "@/lib/auth"; // your custom token auth
-import { prisma } from "@/lib/prisma"; // your prisma client
+import { prisma } from "@/lib/prisma";
 import { NextApiRequest, NextApiResponse } from "next";
+import { z } from "zod";
+
+const projectSchema = z.object({
+  name: z.string().min(1),
+  companyId: z.string().min(1),
+  description: z.string().optional(),
+  status: z.string().optional(),
+});
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
-    // Create a new project
     try {
-      const { name, description, companyId } = req.body;
-      const token = req.headers.authorization?.split(' ')[1];
-
-      if (!token) {
-        return res.status(401).json({ message: "Unauthorized" });
+      const result = projectSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid input", details: result.error });
       }
-
-      const user = await verifyToken(token);
-
-      if (!user) {
-        return res.status(401).json({ message: "Invalid token" });
-      }
-
-      if (!name || !companyId) {
-        return res.status(400).json({ message: "Name and Company ID are required" });
-      }
-
-      const project = await prisma.project.create({
-        data: {
-          name,
-          description,
-          companyId,
-        },
-      });
-
-      return res.status(200).json(project);
+      const project = await prisma.project.create({ data: result.data });
+      return res.status(201).json(project);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Something went wrong" });
+      return res.status(500).json({ error: "Failed to create project" });
     }
-  } 
-  else if (req.method === "GET") {
-    // Fetch all projects for the user's company
+  }
+
+  if (req.method === "GET") {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-
-      if (!token) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const user = await verifyToken(token);
-
-      if (!user || !user.companyId) {
-        return res.status(401).json({ message: "Invalid token or missing company" });
-      }
-
-      const projects = await prisma.project.findMany({
-        where: {
-          companyId: user.companyId,
-        },
-      });
-
+      const projects = await prisma.project.findMany();
       return res.status(200).json(projects);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Something went wrong" });
+      return res.status(500).json({ error: "Failed to fetch projects" });
     }
-  } 
-  else {
-    res.setHeader('Allow', ['POST', 'GET']);
-    return res.status(405).json({ message: `Method ${req.method} Not Allowed` });
   }
+
+  return res.status(405).json({ error: "Method not allowed" });
 }

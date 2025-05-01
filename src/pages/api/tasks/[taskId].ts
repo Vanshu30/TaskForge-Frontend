@@ -1,65 +1,43 @@
-import { verifyToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextApiRequest, NextApiResponse } from "next";
+import { z } from "zod";
+
+const updateSchema = z.object({
+  title: z.string().optional(),
+  status: z.enum(["TODO", "IN_PROGRESS", "DONE"]).optional(),
+});
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { taskId } = req.query;
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "No token provided" });
 
-  const decoded = await verifyToken(token);
-  if (!decoded) return res.status(401).json({ message: "Invalid token" });
+  if (typeof taskId !== "string") {
+    return res.status(400).json({ error: "Invalid task ID" });
+  }
 
-  if (req.method === "GET") {
-    try {
-      const task = await prisma.task.findUnique({
-        where: { id: taskId as string },
-      });
+  try {
+    if (req.method === "GET") {
+      const task = await prisma.task.findUnique({ where: { id: taskId } });
+      if (!task) return res.status(404).json({ error: "Task not found" });
+      return res.status(200).json(task);
+    }
 
-      if (!task) {
-        return res.status(404).json({ message: "Task not found" });
+    if (req.method === "PUT") {
+      const result = updateSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid input", details: result.error });
       }
-
-      res.status(200).json(task);
-    } catch (error) {
-      console.error("Error fetching task:", error);
-      res.status(500).json({ message: "Server error" });
+      const updated = await prisma.task.update({ where: { id: taskId }, data: result.data });
+      return res.status(200).json(updated);
     }
-  }
 
-  if (req.method === "PUT") {
-    try {
-      const { title, description, status, dueDate } = req.body;
-
-      const updatedTask = await prisma.task.update({
-        where: { id: taskId as string },
-        data: {
-          title,
-          description,
-          status,
-          dueDate: dueDate ? new Date(dueDate) : undefined,
-        },
-      });
-
-      res.status(200).json(updatedTask);
-    } catch (error) {
-      console.error("Error updating task:", error);
-      res.status(500).json({ message: "Server error" });
+    if (req.method === "DELETE") {
+      await prisma.task.delete({ where: { id: taskId } });
+      return res.status(204).end();
     }
+
+    return res.status(405).json({ error: "Method not allowed" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Server error" });
   }
-
-  if (req.method === "DELETE") {
-    try {
-      await prisma.task.delete({
-        where: { id: taskId as string },
-      });
-
-      res.status(200).json({ message: "Task deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting task:", error);
-      res.status(500).json({ message: "Server error" });
-    }
-  }
-
-  return res.status(405).json({ message: `Method ${req.method} not allowed` });
 }

@@ -1,6 +1,6 @@
 
-import React from 'react';
 import { CheckCircle } from 'lucide-react';
+import React from 'react';
 
 const FeatureSection: React.FC = () => {
   return (

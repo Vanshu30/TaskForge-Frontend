@@ -1,9 +1,10 @@
-
 import KanbanBoard from '@/components/KanbanBoard';
 import { Layout } from '@/components/Layout';
 import TaskManager from "@/components/TaskManager";
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { fetchProjectById } from '@/service/project';
+import { deleteTask } from '@/service/taskService';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
@@ -38,47 +39,42 @@ const ProjectDetail = () => {
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+  const [teamMembers, setTeamMembers] = useState([]);
 
   useEffect(() => {
-    if (!projectId) return;
-    
-    // Get project details from localStorage
-    const projects = localStorage.getItem('projects');
-    if (projects) {
-      const parsedProjects = JSON.parse(projects) as Project[];
-      const foundProject = parsedProjects.find((p: Project) => p.id === projectId);
-      if (foundProject) {
-        setProject(foundProject);
-      }
+    const stored = localStorage.getItem(`team_${projectId}`);
+    if (stored) {
+      setTeamMembers(JSON.parse(stored));
     }
-    setLoading(false);
   }, [projectId]);
+  
+  useEffect(() => {
+    if (!projectId || !user?.token) return;
+  
+    fetchProjectById(projectId, user.token)
+      .then(setProject)
+      .catch((err) => {
+        console.error("Failed to load project:", err);
+        toast({
+          title: "Error",
+          description: "Unable to load project",
+          variant: "destructive",
+        });
+      })
+      .finally(() => setLoading(false));
+  }, [projectId, user?.token]);
+  
 
-  const handleTaskDelete = (taskId: string) => {
-    if (!projectId) {
-      console.error("Missing projectId for task deletion");
-      toast({
-        title: "Error",
-        description: "Project ID is missing",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!taskId) {
-      console.error("Missing taskId for deletion");
-      toast({
-        title: "Error",
-        description: "Task ID is missing",
-        variant: "destructive"
-      });
-      return;
-    }
-    
+  const handleTaskDelete = async (taskId: string) => {
+    if (!taskId || !user?.token) return;
+  
     try {
+      // First, delete the task from the backend
+      await deleteTask(taskId, user.token);
+      
       console.log("ProjectDetail - Starting task deletion for taskId:", taskId);
       
-      // Get current tasks and columns
+      // Get current tasks and columns from localStorage
       const tasksKey = `tasks_${projectId}`;
       const columnsKey = `columns_${projectId}`;
       
@@ -132,10 +128,10 @@ const ProjectDetail = () => {
       window.dispatchEvent(deleteEvent);
       
     } catch (error) {
-      console.error("Error deleting task:", error);
+      console.error("Failed to delete task:", error);
       toast({
         title: "Error",
-        description: "Could not delete task",
+        description: "Failed to delete task",
         variant: "destructive"
       });
     }
@@ -164,6 +160,34 @@ const ProjectDetail = () => {
     );
   }
 
+  // Ensure projectId is defined before rendering
+  if (!projectId) {
+    return (
+      <Layout>
+        <div className="text-center p-8">
+          <h2 className="text-2xl font-bold mb-4">Invalid Project</h2>
+          <p className="text-muted-foreground">
+            No project ID was provided.
+          </p>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Ensure projectId is defined before rendering
+  if (!projectId) {
+    return (
+      <Layout>
+        <div className="text-center p-8">
+          <h2 className="text-2xl font-bold mb-4">Invalid Project</h2>
+          <p className="text-muted-foreground">
+            No project ID was provided.
+          </p>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <Helmet>
@@ -180,9 +204,12 @@ const ProjectDetail = () => {
         onTaskDelete={handleTaskDelete}
       />
       <TaskManager 
-  projectId={projectId!} 
-  token={user?.token || ""}
-/>
+        projectId={projectId}
+        token={user?.token || ""}
+        teamMembers={teamMembers}
+      />
+
+
     </Layout>
   );
 };

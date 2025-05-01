@@ -1,9 +1,10 @@
 
-import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Calendar, MessageSquare, Bug, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { AlertCircle, Bug, Calendar, CheckCircle, Clock, MessageSquare, Trash2 } from 'lucide-react';
+import React from 'react';
 
 interface TaskCardProps {
   task: {
@@ -20,9 +21,10 @@ interface TaskCardProps {
     comments: any[];
   };
   onClick: () => void;
+  onDelete?: (taskId: string) => void;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onDelete }) => {
   const getTaskTypeIcon = () => {
     switch (task.type) {
       case 'bug':
@@ -97,7 +99,23 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
             {task.comments.length}
           </div>
         </div>
-        <div className="text-xs text-primary">Click for details</div>
+        <div className="flex items-center gap-2">
+          <div className="text-xs text-primary">Click for details</div>
+          {onDelete && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent triggering the card's onClick
+                onDelete(task.id);
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="sr-only">Delete</span>
+            </Button>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );

@@ -102,7 +102,19 @@ export async function getProjects() {
   return apiRequest<Project[]>('/projects');
 }
 
+
+
+// Task interface
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: 'completed' | 'in-progress' | 'pending';
+  dueDate: string;
+  // Add other task properties as needed
+}
+
 // Fetch Tasks
-export async function getTasks() {
-  return apiRequest('/tasks');
+export async function getTasks(): Promise<Task[]> {
+  return apiRequest<Task[]>('/tasks');
 }

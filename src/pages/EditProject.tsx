@@ -1,6 +1,6 @@
 import { getProject, updateProject } from "@/lib/api/projects"; // ensure getProject exists
 import { useEffect, useState } from "react";
-import { useNavigate, useParams} from @/lib/api/projectsuter-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function EditProject() {
   const { id } = useParams<{ id: string }>();
@@ -51,10 +51,15 @@ export default function EditProject() {
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
+      <label htmlFor="project-status" className="block mb-1 font-medium">
+        Status
+      </label>
       <select
+        id="project-status"
         className="block w-full mb-4 border px-3 py-2 rounded"
         value={status}
         onChange={(e) => setStatus(e.target.value)}
+        aria-label="Project Status"
       >
         <option value="IN_PROGRESS">In Progress</option>
         <option value="COMPLETED">Completed</option>

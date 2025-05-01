@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    height: 100%;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+    @apply m-0 p-0 min-h-screen box-border antialiased text-gray-900 bg-white;
+  }
+  *, *::before, *::after {
+    box-sizing: inherit;
+  }
+  
