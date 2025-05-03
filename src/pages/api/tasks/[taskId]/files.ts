@@ -6,7 +6,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const taskId = req.query.taskId as string;
 
   if (req.method === "GET") {
-    const files = await prisma.file.findMany({ where: { taskId } });
+    const files = await prisma.File.findMany({ where: { taskId } });
     return res.status(200).json({ files });
   }
 

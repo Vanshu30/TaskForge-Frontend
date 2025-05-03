@@ -1,28 +1,46 @@
 import ProjectsList from "@/components/ProjectsList";
-import { getProjects } from "@/service/project"; // your service layer
+import { getProjects } from "@/service/project";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
-// Define the Project interface
 interface Project {
   id: string;
   name: string;
   description: string;
   companyId: string;
-  // Add other properties as needed
+  status: 'active' | 'completed' | 'on-hold';
+  lastUpdated: string;
+  teamSize: number;
+  tags: string[];
 }
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState<boolean>(true); // loading state
   
   useEffect(() => {
-    // Assuming we have the companyId from context or localStorage
     const companyId = localStorage.getItem('companyId') || '';
     
+    setLoading(true); // Start loading
     getProjects(companyId)
-      .then(response => setProjects(response.data))
-      .catch(() => toast.error("Failed to load projects"));
+      .then(response => {
+        // Transform the data to match the Project interface
+        const transformedProjects = response.data.map((project: any) => ({
+          ...project,
+          // Add default values for missing properties
+          status: project.status || 'active',
+          lastUpdated: project.lastUpdated || new Date().toISOString(),
+          teamSize: project.teamSize || 1,
+          tags: project.tags || [],
+        }));
+        setProjects(transformedProjects);
+        setLoading(false); // End loading
+      })
+      .catch(() => {
+        toast.error("Failed to load projects");
+        setLoading(false); // End loading
+      });
   }, []);
 
   const handleDelete = (id: string) => {
@@ -37,7 +55,12 @@ const ProjectsPage = () => {
           + New Project
         </Link>
       </div>
-      <ProjectsList projects={projects} onDelete={handleDelete} />
+
+      {loading ? (
+        <div className="text-center">Loading projects...</div> // Display loading message
+      ) : (
+        <ProjectsList projects={projects} onDelete={handleDelete} />
+      )}
     </div>
   );
 };

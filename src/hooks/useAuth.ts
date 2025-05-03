@@ -1,19 +1,9 @@
 // src/hooks/useAuth.ts
+import { LoginFormValues, SignupFormValues } from '@/context/AuthTypes';
 import { login as apiLogin, signup as apiSignup } from '@/service/authService';
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthExports';
-
-interface LoginFormValues {
-  email: string;
-  password: string;
-}
-
-interface SignupFormValues {
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -26,30 +16,46 @@ export const useAuth = () => {
   const isAuthenticated = !!localStorage.getItem('token');
 
   const login = async ({ email, password }: LoginFormValues) => {
-    const res = await apiLogin({ email, password });
-    const { token, user } = res.data;
+    try {
+      const res = await apiLogin({ email, password });
+      const { token, user } = res.data;
 
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-    if (user.companyId) {
-      navigate("/dashboard");
-    } else {
-      navigate("/create-company");
+      console.log('Login successful:', user);
+
+      if (user.companyId) {
+        navigate("/dashboard");
+      } else {
+        navigate("/create-company");
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      alert('Login failed. Please check your credentials.');
+      throw error;
     }
   };
 
   const signup = async (data: SignupFormValues) => {
-    const res = await apiSignup(data);
-    const { token, user } = res.data;
+    try {
+      const res = await apiSignup(data);
+      const { token, user } = res.data;
 
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-    if (user.companyId) {
-      navigate("/dashboard");
-    } else {
-      navigate("/create-company");
+      console.log('Signup successful:', user);
+
+      if (user.companyId) {
+        navigate("/dashboard");
+      } else {
+        navigate("/create-company");
+      }
+    } catch (error) {
+      console.error('Signup failed:', error);
+      alert('Signup failed. Please try again.');
+      throw error;
     }
   };
 

@@ -1,9 +1,8 @@
-
 import React from 'react';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-jira-text text-white">
+    <footer className="bg-blue-600 text-white"> {/* Changed to a blue background */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
@@ -85,7 +84,7 @@ const Footer: React.FC = () => {
         </div>
         
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; {new Date().getFullYear()} TaskForgee, Inc. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} TaskForge, Inc. All rights reserved.</p>
         </div>
       </div>
     </footer>

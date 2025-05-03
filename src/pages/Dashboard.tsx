@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import TaskList from '../components/TaskList';
 
 interface Task {
   id: string;
@@ -65,7 +66,6 @@ const Dashboard: React.FC = () => {
     };
     fetchTasks();
   }, []);
-  
 
   useEffect(() => {
     if (!user) {
@@ -179,32 +179,8 @@ const Dashboard: React.FC = () => {
             </TabsList>
 
             <TabsContent value="tasks">
-  <div className="space-y-4">
-    {tasks.length === 0 ? (
-      <div className="text-center py-12 text-muted-foreground">
-        No tasks available
-      </div>
-    ) : (
-      tasks.map((task) => (
-        <Card key={task.id} className="hover:shadow-sm transition-shadow">
-          <CardHeader className="flex justify-between items-center">
-            <CardTitle className="text-base">{task.title}</CardTitle>
-            <span className={`text-sm rounded px-2 py-1 ${
-              task.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-            }`}>
-              {task.status}
-            </span>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{task.description}</p>
-            <div className="mt-2 text-xs text-gray-500">Due: {new Date(task.dueDate).toLocaleDateString()}</div>
-          </CardContent>
-        </Card>
-      ))
-    )}
-  </div>
-</TabsContent>
-
+              <TaskList projectId="dashboard" />
+            </TabsContent>
 
             <TabsContent value="projects">
               <div className="p-4">

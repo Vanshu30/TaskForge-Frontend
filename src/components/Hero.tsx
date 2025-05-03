@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -23,7 +22,7 @@ const Hero: React.FC = () => {
             </p>
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
               <Link to="/signup">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white text-primary border-white/50 hover:bg-white/20 hover:border-white/70">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto bg-primary text-white border-white/50 hover:bg-primary-dark hover:border-white/70">
                   Get it free
                 </Button>
               </Link>
@@ -31,9 +30,9 @@ const Hero: React.FC = () => {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="w-full sm:w-auto bg-white text-primary border-white/50 hover:bg-white/20 hover:border-white/70"
+                  className="w-full sm:w-auto bg-primary text-white border-white/50 hover:bg-primary-dark hover:border-white/70"
                 >
-                  Log in
+                  Log In
                 </Button>
               </Link>
             </div>

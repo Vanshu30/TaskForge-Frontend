@@ -40,15 +40,26 @@ const AddTaskDialog = ({ projectId, onAddTask, teamMembers = [] }: AddTaskDialog
       return;
     }
 
-    const task = {
-      ...data,
-      dueDate: selectedDate?.toISOString(),
-      assignee: { name: assignee },
+    // Extract only the title and description for the createTask function
+    const taskData = {
+      title: data.title,
+      description: data.description,
     };
 
     try {
-      const newTask = await createTask(token, projectId, task);
-      onAddTask(newTask);
+      // Fix the parameter order: projectId, data, token
+      const newTask = await createTask(projectId, taskData, token);
+      
+      // Add the additional properties to the task before passing to onAddTask
+      const completeTask = {
+        ...newTask,
+        status: data.status,
+        priority: data.priority,
+        dueDate: selectedDate?.toISOString(),
+        assignee: { name: assignee },
+      };
+      
+      onAddTask(completeTask);
       toast({ title: 'Task created successfully' });
       setOpen(false);
       form.reset();

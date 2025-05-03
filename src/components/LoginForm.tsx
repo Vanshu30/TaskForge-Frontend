@@ -10,11 +10,14 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      console.log("Attempting login with:", { email, password });
       const response = await login({ email, password });
+      console.log("Login response:", response.data);
       localStorage.setItem("token", response.data.token);
       setError("");
-    } catch {
-      setError("Login failed. Check your credentials.");
+    } catch (err: any) {
+      console.error("Login failed:", err);
+      setError(err?.response?.data?.message || "Login failed. Check your credentials.");
     }
   };
 
