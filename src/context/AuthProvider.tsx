@@ -1,38 +1,52 @@
+import { login as apiLogin, signup as apiSignup } from '@/service/authService';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser, signupUser } from '../api';
-import { AuthContext, SignupFormValues, User } from './AuthTypes';
-
+import { AuthContext, LoginFormValues, SignupFormValues, User } from './AuthTypes';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
-const [loading, setLoading] = useState<boolean>(false);
-const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
 
-useEffect(() => {
+  useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-    setUser(JSON.parse(storedUser));
+      setUser(JSON.parse(storedUser));
     }
-}, []);
+  }, []);
 
-const login = async (email: string, password: string) => {
+  const login = async (data: LoginFormValues) => {
     try {
       setLoading(true);
-      // Include a default role to satisfy the loginUser function requirements
-      const response = await loginUser({ email, password, role: "Viewer" }); // 🔁 Connect to backend
-      setUser(response.user);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      console.log('AuthProvider login with:', data);
+      const res = await apiLogin(data);
+      const { token, user } = res.data;
+      
+      setUser(user);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      console.log('Login successful:', user);
+      
+      if (user.organizationId) {
+        navigate('/dashboard');
+      } else {
+        navigate('/create-company');
+      }
+      
+      return { success: true, user };
     } catch (error) {
+      console.error('Login failed:', error);
       setUser(null);
       throw error;
     } finally {
       setLoading(false);
     }
-};
+  };
 
-const logout = () => {
+  const logout = () => {
     setUser(null);
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('selectedPlan');
     navigate('/login');
@@ -41,13 +55,26 @@ const logout = () => {
   const signup = async (userData: SignupFormValues) => {
     try {
       setLoading(true);
-      // Extract only the fields needed by the API
-      const { name, email, password, organizationId, organizationName, role } = userData;
-      const signupData = { name, email, password, organizationId, organizationName, role };
-      const response = await signupUser(signupData); // 🔁 Connect to backend
-      setUser(response.user);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      navigate('/package-selection'); // or '/dashboard'
+      console.log('AuthProvider signup with:', userData);
+      const res = await apiSignup(userData);
+      const { token, user } = res.data;
+      
+      setUser(user);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      console.log('Signup successful:', user);
+      
+      if (user.organizationId) {
+        navigate('/dashboard');
+      } else {
+        navigate('/create-company');
+      }
+      
+      return { success: true, user };
+    } catch (error) {
+      console.error('Signup failed:', error);
+      throw error;
     } finally {
       setLoading(false);
     }

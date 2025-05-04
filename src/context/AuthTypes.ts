@@ -32,9 +32,9 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (data: LoginFormValues) => Promise<any>;
   logout: () => void;
-  signup: (userData: SignupFormValues) => Promise<void>;
+  signup: (userData: SignupFormValues) => Promise<any>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

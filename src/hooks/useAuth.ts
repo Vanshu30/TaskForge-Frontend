@@ -15,9 +15,10 @@ export const useAuth = () => {
 
   const isAuthenticated = !!localStorage.getItem('token');
 
-  const login = async ({ email, password }: LoginFormValues) => {
+  const login = async (data: LoginFormValues) => {
     try {
-      const res = await apiLogin({ email, password });
+      console.log('Login attempt with:', data);
+      const res = await apiLogin(data);
       const { token, user } = res.data;
 
       localStorage.setItem("token", token);
@@ -25,21 +26,32 @@ export const useAuth = () => {
 
       console.log('Login successful:', user);
 
-      if (user.companyId) {
+      // Navigate based on user data
+      if (user.organizationId) {
         navigate("/dashboard");
       } else {
         navigate("/create-company");
       }
+      
+      return { success: true, user };
     } catch (error) {
       console.error('Login failed:', error);
-      alert('Login failed. Please check your credentials.');
       throw error;
     }
   };
 
   const signup = async (data: SignupFormValues) => {
     try {
-      const res = await apiSignup(data);
+      console.log('Signup attempt with:', data);
+      // Transform the data to match what the API expects
+      const apiData = {
+        ...data,
+        data: {
+          email: data.email,
+          password: data.password
+        }
+      };
+      const res = await apiSignup(apiData);
       const { token, user } = res.data;
 
       localStorage.setItem("token", token);
@@ -47,22 +59,31 @@ export const useAuth = () => {
 
       console.log('Signup successful:', user);
 
-      if (user.companyId) {
+      // Navigate based on user data
+      if (user.organizationId) {
         navigate("/dashboard");
       } else {
         navigate("/create-company");
       }
+      
+      return { success: true, user };
     } catch (error) {
       console.error('Signup failed:', error);
-      alert('Signup failed. Please try again.');
       throw error;
     }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
   };
 
   return {
     ...context,
     isAuthenticated,
     login,
-    signup
+    signup,
+    logout
   };
 };

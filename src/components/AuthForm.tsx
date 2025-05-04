@@ -21,7 +21,7 @@ export interface LoginFormValues {
 
 type AuthFormProps = {
   type: "login" | "signup";
-  onSubmit: (data: LoginFormValues | SignupFormValues) => void;
+  onSubmit: (data: LoginFormValues | SignupFormValues) => void | Promise<void>;
   loading: boolean;
 };
 

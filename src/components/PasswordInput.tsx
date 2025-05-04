@@ -1,12 +1,12 @@
-
-import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
+import React, { useState } from "react";
 
 interface PasswordInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+  // Making value and onChange optional to work with react-hook-form
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   id?: string;
   placeholder?: string;
   name?: string;
