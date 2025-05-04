@@ -1,5 +1,4 @@
 import ProjectsList from "@/components/ProjectsList";
-import { getProjects } from "@/service/project";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -8,8 +7,7 @@ interface Project {
   id: string;
   name: string;
   description: string;
-  companyId: string;
-  status: 'active' | 'completed' | 'on-hold';
+  status: 'active' | 'completed' | 'archived';
   lastUpdated: string;
   teamSize: number;
   tags: string[];
@@ -20,38 +18,41 @@ const ProjectsPage = () => {
   const [loading, setLoading] = useState<boolean>(true); // loading state
   
   useEffect(() => {
-    const companyId = localStorage.getItem('companyId') || '';
-    
     setLoading(true); // Start loading
-    getProjects(companyId)
-      .then(response => {
-        // Transform the data to match the Project interface
-        const transformedProjects = response.data.map((project: any) => ({
-          ...project,
-          // Add default values for missing properties
-          status: project.status || 'active',
-          lastUpdated: project.lastUpdated || new Date().toISOString(),
-          teamSize: project.teamSize || 1,
-          tags: project.tags || [],
-        }));
-        setProjects(transformedProjects);
-        setLoading(false); // End loading
-      })
-      .catch(() => {
-        toast.error("Failed to load projects");
-        setLoading(false); // End loading
-      });
+    
+    try {
+      // Load projects from localStorage
+      const savedProjects = localStorage.getItem('projects');
+      if (savedProjects) {
+        const parsedProjects = JSON.parse(savedProjects);
+        setProjects(parsedProjects);
+      } else {
+        // If no projects in localStorage, set empty array
+        setProjects([]);
+      }
+    } catch (error) {
+      console.error('Failed to parse saved projects:', error);
+      toast.error("Failed to load projects");
+      setProjects([]);
+    } finally {
+      setLoading(false); // End loading
+    }
   }, []);
 
   const handleDelete = (id: string) => {
-    setProjects((prev) => prev.filter((project) => project.id !== id));
+    const updatedProjects = projects.filter(project => project.id !== id);
+    setProjects(updatedProjects);
+    
+    // Update localStorage
+    localStorage.setItem('projects', JSON.stringify(updatedProjects));
+    toast.success("Project deleted successfully");
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">All Projects</h1>
-        <Link to="/projects/new" className="text-blue-600 underline">
+        <Link to="/create-project" className="text-blue-600 underline">
           + New Project
         </Link>
       </div>

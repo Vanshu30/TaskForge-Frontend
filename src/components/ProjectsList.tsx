@@ -2,14 +2,14 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Folder, Trash2 } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface Project {
   id: string;
   name: string;
   description: string;
-  status: 'active' | 'completed' | 'on-hold';
+  status: 'active' | 'completed' | 'archived';
   lastUpdated: string;
   teamSize: number;
   tags: string[];
@@ -23,7 +23,11 @@ interface ProjectsListProps {
 const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onDelete }) => {
   const navigate = useNavigate();
 
-  if (!projects.length) {
+  useEffect(() => {
+    console.log("ProjectsList received projects:", projects);
+  }, [projects]);
+
+  if (!projects || !projects.length) {
     return (
       <div className="text-center py-12 text-muted-foreground">
         No projects found.
@@ -76,7 +80,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onDelete }) => {
             <div className="text-xs text-gray-500">
               Team Size: {project.teamSize}
             </div>
-            {project.tags.length > 0 && (
+            {project.tags && project.tags.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {project.tags.map((tag, i) => (
                   <span

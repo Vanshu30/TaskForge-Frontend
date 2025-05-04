@@ -1,7 +1,7 @@
+import axios from "@/api/axios"; // Use the configured axios instance
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
-import axios from "axios";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
@@ -26,7 +26,7 @@ const InviteMember = () => {
       const token = localStorage.getItem('token');
 
       await axios.post(
-        "/api/invites",
+        "/invite/create",
         {
           email,
           companyId: user.companyId,

@@ -45,7 +45,17 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onTaskCreated }) => {
     }
 
     try {
-      await createTask(projectId, { title, description }, token);
+      await createTask(
+        projectId, 
+        { 
+          title, 
+          description, 
+          priority, 
+          dueDate: dueDate || undefined,
+          assignee: assigneeName || undefined
+        }, 
+        token
+      );
 
       toast({
         title: 'Task Created!',

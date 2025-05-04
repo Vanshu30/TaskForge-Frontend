@@ -20,23 +20,30 @@ interface Props {
 const TaskList = ({ projectId }: Props) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null); // Added error state
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
     getTasks(projectId, token)
-      .then(setTasks)
-      .catch((err) => console.error("Error loading tasks:", err))
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setTasks(data);
+        } else {
+          throw new Error('Expected an array of tasks');
+        }
+      })
+      .catch((err) => {
+        console.error("Error loading tasks:", err);
+        setError('Failed to load tasks. Please try again later.');
+      })
       .finally(() => setLoading(false));
   }, [projectId]);
 
   if (loading) return <div>Loading tasks...</div>;
 
-  const handleTaskClick = (taskId: string) => {
-    console.log(`Task clicked: ${taskId}`);
-    // You can implement navigation to task details or other actions here
-  };
+  if (error) return <div className="text-red-600">{error}</div>;
 
   return (
     <div>
@@ -47,7 +54,7 @@ const TaskList = ({ projectId }: Props) => {
             <div key={task.id}>
               <TaskCard 
                 task={task} 
-                onClick={() => handleTaskClick(task.id)} 
+                onClick={() => console.log(`Task clicked: ${task.id}`)} 
               />
             </div>
           ))}

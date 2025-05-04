@@ -9,12 +9,20 @@ export default function CreateProjectForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setStatus("You must be logged in to create a project");
+      return;
+    }
+    
     try {
-      await createProject({ name, companyId });
+      await createProject({ name, companyId }, token);
       setStatus("Project created successfully");
       setName("");
       setCompanyId("");
-    } catch {
+    } catch (error) {
+      console.error("Error creating project:", error);
       setStatus("Failed to create project");
     }
   };

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Clock, Plus, Search, Users } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,7 +14,7 @@ interface Project {
   id: string;
   name: string;
   description: string;
-  status: 'active' | 'completed' | 'on-hold';
+  status: 'active' | 'completed' | 'archived';
   lastUpdated: string;
   teamSize: number;
   tags: string[];
@@ -26,27 +26,19 @@ interface ProjectsProps {
 }
 
 const Projects: React.FC<ProjectsProps> = ({ projects: propProjects = [], onAddProject }) => {
-  const [localProjects, setLocalProjects] = useState<Project[]>([
-    // Default sample projects if none provided
-    {
-      id: 'project-1',
-      name: 'Website Redesign',
-      description: 'Redesign the company website with modern UI/UX principles',
-      status: 'active',
-      lastUpdated: new Date().toISOString(),
-      teamSize: 3,
-      tags: ['Design', 'Frontend'],
-    },
-    {
-      id: 'project-2',
-      name: 'Mobile App Development',
-      description: 'Create a mobile app for our customers',
-      status: 'on-hold',
-      lastUpdated: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      teamSize: 5,
-      tags: ['Mobile', 'React Native'],
-    },
-  ]);
+  const [localProjects, setLocalProjects] = useState<Project[]>([]);
+  
+  useEffect(() => {
+    // Load projects from localStorage
+    const savedProjects = localStorage.getItem('projects');
+    if (savedProjects) {
+      try {
+        setLocalProjects(JSON.parse(savedProjects));
+      } catch (error) {
+        console.error('Failed to parse saved projects:', error);
+      }
+    }
+  }, []);
   
   // Use provided projects if available, otherwise use local state
   const projectsToDisplay = propProjects.length > 0 ? propProjects : localProjects;
@@ -54,7 +46,11 @@ const Projects: React.FC<ProjectsProps> = ({ projects: propProjects = [], onAddP
   // Default implementation for onAddProject if not provided
   const handleAddProject = onAddProject || ((project: Project) => {
     console.log('New project added:', project);
-    setLocalProjects(prev => [...prev, project]);
+    const updatedProjects = [...localProjects, project];
+    setLocalProjects(updatedProjects);
+    
+    // Save to localStorage
+    localStorage.setItem('projects', JSON.stringify(updatedProjects));
   });
   
   const navigate = useNavigate();
@@ -69,7 +65,7 @@ const Projects: React.FC<ProjectsProps> = ({ projects: propProjects = [], onAddP
   interface ProjectFormValues {
     name: string;
     description: string;
-    status: 'active' | 'completed' | 'on-hold';
+    status: 'active' | 'completed' | 'archived';
   }
 
   const form = useForm<ProjectFormValues>({
@@ -94,6 +90,16 @@ const Projects: React.FC<ProjectsProps> = ({ projects: propProjects = [], onAddP
     handleAddProject(newProject);
     setOpen(false);
     form.reset();
+    
+    // Refresh the page to show the new project
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+    
+    // Refresh the page to show the new project
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   };
 
   const handleProjectClick = (projectId: string) => {
@@ -112,7 +118,7 @@ const Projects: React.FC<ProjectsProps> = ({ projects: propProjects = [], onAddP
         return 'bg-green-100 text-green-800 hover:bg-green-200';
       case 'completed':
         return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-      case 'on-hold':
+      case 'archived':
         return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
       default:
         return 'bg-gray-100 text-gray-800 hover:bg-gray-200';

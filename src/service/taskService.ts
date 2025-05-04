@@ -3,11 +3,14 @@ import axios from "../api/axios";
 interface TaskData {
   title: string;
   description?: string;
+  priority?: string;
+  dueDate?: string;
+  assignee?: string;
 }
 
 export const createTask = async (
   projectId: string,
-  data: { title: string; description?: string },
+  data: TaskData,
   token: string
 ) => {
   const response = await axios.post("/task/create", {
@@ -39,7 +42,7 @@ export const fetchTaskById = async (
   taskId: string,
   token: string
 ) => {
-  const response = await axios.get(`/api/tasks/${taskId}`, {
+  const response = await axios.get(`/task/${taskId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
